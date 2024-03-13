@@ -32,13 +32,18 @@ const run = async () => {
 			}
 		}
 
-		if (message.message.includes("!resetcbqueue")) {
-			if (message.tags.isModerator === true || message.tags.badges.broadcaster === true) {
+
+		if (message.tags.isModerator === true || message.tags.badges.broadcaster === true) {
+			if (message.message.includes("!resetcbqueue")) {
 				resetCBQueue();
 				resetCBPendingQueue();
 			}
+			if (message.message.includes("!cbremove")) {
+				bsr_match = (message.message.match(/^\!(.*?)\s(.*?)(\s.*)?$/));
+				removeBsrQueue(bsr_match[2]);
+			}
 		}
-	
+
 		// These only come from the BS+ User
 		if (message.username === process.env.BSCHATUSER) {
 			// If BS+ Adds to Queue, Remove from Pending and add to Active Queue
@@ -59,7 +64,9 @@ const run = async () => {
 			   	'is already in queue',
 			   	'you already have',
 			   	'this song was already requested this session',
-			   	'maps are not allowed'
+			   	'maps are not allowed',
+				'this song has no difficulty',
+				'this song rating is too low'
 			];
 			if (bsrFailMsgs.includes(message.message)) {
 				removeBsrPending(message.username);  
@@ -72,8 +79,8 @@ const run = async () => {
 			}
 
 			// When remove command is used successfully.
-			if (message.message.match(/^(\!\s)?(\@(.*?)\s)?\(bsr\s(.*?)\)\s(.*?)\s\/\s(.*?)\s(.*\%\s)?request\sby\s\@?(.*?)\sis\sremoved\sfrom\squeue(\.|\!)?$/)) {
-				bsr_match = (message.message.match(/^(\!\s)?(\@(.*?)\s)?\(bsr\s(.*?)\)\s(.*?)\s\/\s(.*?)\s(.*\%\s)?request\sby\s\@?(.*?)\sis\sremoved\sfrom\squeue(\.|\!)?$/));
+			if (message.message.match(/^(\!\s)?(\@(.*?)\s)?\(bsr\s(.*?)\)\s(.*?)\s\/\s(.*?)\s(.*\%\s)?(request\sby\s\@?(.*?)\s)?is\sremoved\sfrom\squeue(\.|\!)?$/)) {
+				bsr_match = (message.message.match(/^(\!\s)?(\@(.*?)\s)?\(bsr\s(.*?)\)\s(.*?)\s\/\s(.*?)\s(.*\%\s)?(request\sby\s\@?(.*?)\s)?is\sremoved\sfrom\squeue(\.|\!)?$/));
 				removeBsrQueue(bsr_match[4]);
 			}
 		}
@@ -116,8 +123,19 @@ async function insertBsrQueue(bsr_count,bsr_code,bsr_req,bsr_name,bsr_ts,bsr_len
 
 async function moveBsrQueueTop(bsr_code,mtt_req) {
 	console.log("[BOT Moving To Top of Active Queue Code:[" + bsr_code + "]-ModRan:[" + mtt_req + "]");
-	const res = await pool.query(" UPDATE bsrqueue SET req_order = req_order + 1 WHERE req_order > 0 AND bsr_code != '" + bsr_code + "';");
-	const mov = await pool.query(" UPDATE bsrqueue SET req_order = 1 WHERE bsr_code = '" + bsr_code + "';"); 
+	queryBsrQueueByCode( bsr_code, async function(code_return){
+		if (code_return.rowCount > 0) {
+			const res = await pool.query(" UPDATE bsrqueue SET req_order = req_order + 1 WHERE req_order > 0 AND bsr_code != '" + bsr_code + "';");
+			const mov = await pool.query(" UPDATE bsrqueue SET req_order = 1 WHERE bsr_code = '" + bsr_code + "';"); 
+		} else {
+			queryBsrQueueByUsername( bsr_code, async function(user_return) {
+				if(user_return.rowCount > 0) {
+					const res = await pool.query(" UPDATE bsrqueue SET req_order = req_order + 1 WHERE req_order > 0 AND bsr_code != '" + user_return.rows[0].bsr_code + "';");
+					const mov = await pool.query(" UPDATE bsrqueue SET req_order = 1 WHERE bsr_code = '" + user_return.rows[0].bsr_code + "';"); 		
+				}
+			});
+		}
+	});
 }
 
 async function insertBsrQueueTop(bsr_count,bsr_code,bsr_req,bsr_name,bsr_ts,bsr_length,bsr_note) {
@@ -202,7 +220,7 @@ async function queryBsrQueueByCode(bsr_code, callback) {
 }
 
 async function queryBsrQueueByUsername(bsr_req, callback) {
-	const res = await pool.query("SELECT * FROM bsrqueue WHERE bsr_req = $1", [ bsr_req ]);
+	const res = await pool.query("SELECT * FROM bsrqueue WHERE bsr_req = $1 ORDER BY req_order DESC", [ bsr_req ]);
 	callback( res );
 }
 
@@ -213,15 +231,28 @@ async function removeBsrPending(bsr_req) {
 
 async function removeBsrQueue(bsr_code) {
 	queryBsrQueueByCode ( bsr_code, async function(by_code){
-		console.log("[BOT] Removing from Active Queue Code:[" + bsr_code + "]");
-		const res = await pool.query("DELETE FROM bsrqueue WHERE bsr_code = $1", [ bsr_code ]);
-		const upd = await pool.query("UPDATE bsrqueue SET req_order = req_order - 1 WHERE req_order > $1", [ by_code.rows[0].req_order ]);
+		if (by_code.rowCount > 0) {
+			console.log("[BOT] Removing from Active Queue Code:[" + bsr_code + "]");
+			const res = await pool.query("DELETE FROM bsrqueue WHERE bsr_code = $1", [ bsr_code ]);
+			const upd = await pool.query("UPDATE bsrqueue SET req_order = req_order - 1 WHERE req_order > $1", [ by_code.rows[0].req_order ]);
+		}
 	});
 }
 
 async function removeBsrQueueByUser(bsr_req) {
 	console.log("[BOT] Removing from Active Queue User:[" + bsr_req + "]");
 	const res = await pool.query("DELETE FROM bsrqueue WHERE bsr_req = $1", [ bsr_req ]);
+}
+
+async function removeLastSongByUser(bsr_req) {
+	queryBsrQueueByUsername(bsr_req, async function(user_return){
+		if (user_return.rowCount > 0) {
+			bsr_code = user_return.rows[0].bsr_code;
+			console.log(bsr_code);
+			const rem = await pool.query("DELETE FROM bsrqueue WHERE bsr_req = $1", [ bsr_code ]);
+			const res = await pool.query("UPDATE bsrqueue SET req_order = req_order + 1 WHERE req_order > 0 AND bsr_code != '" + user_return.rows[0].bsr_code + "';");
+		}
+	});
 }
 
 run();

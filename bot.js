@@ -3,6 +3,7 @@ const dotenv = require("dotenv").config()
 const { Chat, ChatEvents } = require("twitch-js");
 const { pool } = require("./db");
 const https = require('https');
+const _ = require('lodash');
 
 const username = process.env.USERNAME;
 const token = process.env.TOKEN;
@@ -14,21 +15,36 @@ const run = async () => {
 		token
 	});
 
-	await chat.connect();
+	await chatConnect(chat);
 	await chat.join(channel);
+	
+	chat.on('JOIN', (message) => {
+		insertUserlist(message.username);
+	});
+
+	chat.on('PART', (message) => {
+		removeUserlist(message.username);
+	});
 
 	chat.on('PRIVMSG', (message) => {
+
+		if (message.message.includes("!lurk")) {
+			userLurk(message.username);
+		}
+		
 		// Add bsr,modadd Request to Pending Queue
 		if (message.message.match(/^\!(bsr|modadd|att|mtt|remove)\s(.*?)(\s.*)?$/)) {
-			bsr_match = (message.message.match(/^\!(.*?)\s(.*?)(\s.*)?$/));
+			bsr_match = (message.message.match(/^\!(.*?)\s\@?(.*?)(\s.*)?$/));
 			if (message.message.includes("!bsr") || message.message.includes("!modadd")) {
-				insertBsrPending(bsr_match[2],message.username,bsr_match[3],false);
+				insertBsrPending(bsr_match[2],message.username.toLowerCase(),bsr_match[3],false);
 			}
-			if (message.message.includes("!att")) {
-				insertBsrPending(bsr_match[2],message.username,bsr_match[3],true);
-			}
-			if (message.message.includes("!mtt")) {
-				moveBsrQueueTop(bsr_match[2],message.username);	
+			if (message.tags.isModerator === true || message.tags.badges.broadcaster === true) {
+				if (message.message.includes("!att")) {
+					insertBsrPending(bsr_match[2],message.username.toLowerCase(),bsr_match[3],true);
+				}
+				if (message.message.includes("!mtt")) {
+					moveBsrQueueTop(bsr_match[2],message.username.toLowerCase());	
+				}
 			}
 		}
 
@@ -38,9 +54,17 @@ const run = async () => {
 				resetCBQueue();
 				resetCBPendingQueue();
 			}
+			if (message.message.includes("!resetcbuser")) {
+				resetCBUserlist();
+			}
 			if (message.message.includes("!cbremove")) {
 				bsr_match = (message.message.match(/^\!(.*?)\s(.*?)(\s.*)?$/));
-				removeBsrQueue(bsr_match[2]);
+				removeBsrQueue(bsr_match[2].toLowerCase());
+			}
+			if (message.message.includes("!cbskip")) {
+				bsr_match = (message.message.match(/^\!(.*?)\s(.*?)(\s.*)?$/));
+				console.log("bsrskip");
+				bsrSkip(bsr_match[2].toLowerCase());
 			}
 		}
 
@@ -48,12 +72,12 @@ const run = async () => {
 		if (message.username === process.env.BSCHATUSER) {
 			// If BS+ Adds to Queue, Remove from Pending and add to Active Queue
 			if (message.message.includes("added to queue")) {
-				bsr_match = (message.message.match(/^(\!\s)?\(bsr\s(.*?)\)\s(.*?)\s\/\s(.*?)\s(.*\%)\srequested\sby\s\@?(.*?)\sadded\sto\squeue\.?$/));
-				movePendingToActive(bsr_match[2],bsr_match[6]);
+				bsr_match = (message.message.match(/^(\!\s)(\@.*?)?\(bsr\s(.*?)\)\s(.*?)\s\/\s(.*?)\s(.*\%)\srequested\sby\s\@?(.*?)\sadded\sto\squeue\.?$/));
+				movePendingToActive(bsr_match[3],bsr_match[7].toLowerCase());
 			}
 			if (message.message.includes("is now on top of queue")) {
-				bsr_match = (message.message.match(/^(\!\s)?\(bsr\s(.*?)\)\s(.*?)\s\/\s(.*?)\s(.*\%\s)?requested\sby\s\@?(.*?)\sis\snow\son\stop\sof\squeue(\.|\!)?$/));
-				movePendingToActive(bsr_match[2],bsr_match[6]);
+				bsr_match = (message.message.match(/^(\!\s)(\@.*?)?\(bsr\s(.*?)\)\s(.*?)\s\/\s(.*?)\s(.*\%\s)?requested\sby\s\@?(.*?)\sis\snow\son\stop\sof\squeue(\.|\!)?$/));
+				movePendingToActive(bsr_match[3],bsr_match[7].toLowerCase());
 			}
 
 			// If BS+ reports a reason for failure, remove from pending.
@@ -66,10 +90,13 @@ const run = async () => {
 			   	'this song was already requested this session',
 			   	'maps are not allowed',
 				'this song has no difficulty',
-				'this song rating is too low'
+				'this song rating is too low',
+				'song is too long'
 			];
-			if (bsrFailMsgs.includes(message.message)) {
-				removeBsrPending(message.username);  
+			const bsrFailMsgsMatch = bsrFailMsgs.filter(str => message.message.includes(str));
+			if (bsrFailMsgsMatch.length > 0) {
+				bsr_match = (message.message.match(/\!\s\@(.*?)\s(.*)$/));
+				removeBsrPending(bsr_match[1].toLowerCase());
 			}
 			
 			// When next song remove from active queue.
@@ -84,29 +111,77 @@ const run = async () => {
 				removeBsrQueue(bsr_match[4]);
 			}
 		}
+		
+		updateUserlist(message);
 	});
 };
 
-async function resetCBQueue() {
-	console.log("[BOT] Resetting the Chatbot Queue Database");
-	const res = await pool.query("DROP TABLE bsrqueue");
-	createCBQueueDB();
+async function chatConnect(chat) {
+	await chat.connect();
 }
 
-async function createCBQueueDB() {
-	console.log("[BOT] Creating new Chatbot Queue Database");
-	const res = await pool.query("CREATE TABLE bsrqueue (req_id serial PRIMARY KEY, req_order SMALLINT NOT NULL,bsr_code VARCHAR (10) NOT NULL, bsr_req VARCHAR (25) NOT NULL, bsr_name VARCHAR (2048) NOT NULL, bsr_ts TIMESTAMP NOT NULL, bsr_length INTERVAL NOT NULL, bsr_note VARCHAR (2048))");
+async function updateUserlist(message) {
+	queryUserlistByUser(message.username, async function(userResp){
+		if (userResp.rowCount > 0) {
+			const res = await pool.query("UPDATE userlist SET user_lastactivets = current_timestamp WHERE user_username = $1", [ message.username ]);
+			if (userResp.rows[0].user_type === "unknown" || userResp.rows[0].user_type === "") {
+				if (message.tags.badges.moderator === true) {
+					const typ = await pool.query("UPDATE userlist SET user_type = $2 WHERE user_username = $1", [ message.username, "moderator" ]);
+				} else if (message.tags.badges.vip === true) {
+					const typ = await pool.query("UPDATE userlist SET user_type = $2 WHERE user_username = $1", [ message.username, "vip" ]);
+				} else if (message.tags.badges.broadcaster === true) {
+					const typ = await pool.query("UPDATE userlist SET user_type = $2 WHERE user_username = $1", [ message.username, "broadcaster" ]);
+				} else if (message.tags.badges.subscriber > 0) {
+					const typ = await pool.query("UPDATE userlist SET user_type = $2 WHERE user_username = $1", [ message.username, "subscriber" ]);
+				} else {
+					const typ = await pool.query("UPDATE userlist SET user_type = $2 WHERE user_username = $1", [ message.username, "viewer" ]);
+				}
+			}
+
+			if (userResp.rows[0].user_lurk === true) {
+				const lur = await pool.query("UPDATE userlist SET user_lurk = false WHERE user_username = $1", [ message.username ]);
+			}
+		} else {
+			insertUserlist(message.username);
+		}
+	});
+}
+
+async function userLurk (user_username) {
+	queryUserlistByUser(user_username, async function(userResp){
+		if (userResp.rowCount > 0) {
+			const res = await pool.query("UPDATE userlist SET user_lurk = true WHERE user_username = $1", [ user_username ]);
+		}
+	});
+}
+
+async function resetCBUserlist() {
+	console.log("[BOT] Resetting the Chatbot User Queue Database");
+	const res = await pool.query("DELETE FROM userlist");
+}
+
+async function resetCBQueue() {
+	console.log("[BOT] Resetting the Chatbot Queue Database");
+	const res = await pool.query("DELETE FROM bsrqueue");
 }
 
 async function resetCBPendingQueue() {
 	console.log("[BOT] Resetting the Chatbot Pending Database");
-	const res = await pool.query("DROP TABLE bsrpending");
-	createPendingQueueDB();
+	const res = await pool.query("DELETE FROM bsrpending");
 }
 
-async function createPendingQueueDB() {
-	console.log("[BOT] Create new Chatbot Pending Database");
-	const res = await pool.query("CREATE TABLE bsrpending ( req_id serial PRIMARY KEY, req_att BOOL NOT NULL, bsr_code VARCHAR (10) NOT NULL, bsr_req VARCHAR (25) NOT NULL, bsr_ts TIMESTAMP NOT NULL, bsr_note VARCHAR (2048))");
+async function insertUserlist(user_username) {
+	queryUserlistByUser(user_username, async function(userResp){
+		if (userResp.rowCount === 0) {
+			console.log("[BOT] User Joined Username:[" + user_username + "]");
+			const res = await pool.query("INSERT INTO userlist (user_username,user_joints,user_type,user_lurk) VALUES ($1, current_timestamp,$2,false)",[ user_username, "unknown" ]);
+		}
+	});
+}
+
+async function removeUserlist(user_username) {
+	console.log("[BOT] User Left Username:[" + user_username + "]");
+	const res = await pool.query("DELETE FROM userlist WHERE user_username = $1",[ user_username ]);
 }
 
 async function insertBsrPending(bsr_code,bsr_req,bsr_note,req_att) {
@@ -122,7 +197,7 @@ async function insertBsrQueue(bsr_count,bsr_code,bsr_req,bsr_name,bsr_ts,bsr_len
 }
 
 async function moveBsrQueueTop(bsr_code,mtt_req) {
-	console.log("[BOT Moving To Top of Active Queue Code:[" + bsr_code + "]-ModRan:[" + mtt_req + "]");
+	console.log("[BOT] Moving To Top of Active Queue Identifier:[" + bsr_code + "]-ModRan:[" + mtt_req + "]");
 	queryBsrQueueByCode( bsr_code, async function(code_return){
 		if (code_return.rowCount > 0) {
 			const res = await pool.query(" UPDATE bsrqueue SET req_order = req_order + 1 WHERE req_order > 0 AND bsr_code != '" + bsr_code + "';");
@@ -132,6 +207,8 @@ async function moveBsrQueueTop(bsr_code,mtt_req) {
 				if(user_return.rowCount > 0) {
 					const res = await pool.query(" UPDATE bsrqueue SET req_order = req_order + 1 WHERE req_order > 0 AND bsr_code != '" + user_return.rows[0].bsr_code + "';");
 					const mov = await pool.query(" UPDATE bsrqueue SET req_order = 1 WHERE bsr_code = '" + user_return.rows[0].bsr_code + "';"); 		
+				} else {
+					console.log("[BOT] Cannot Find Song With Identifier:[" + bsr_code + "]");
 				}
 			});
 		}
@@ -140,8 +217,9 @@ async function moveBsrQueueTop(bsr_code,mtt_req) {
 
 async function insertBsrQueueTop(bsr_count,bsr_code,bsr_req,bsr_name,bsr_ts,bsr_length,bsr_note) {
 	console.log("[BOT] Adding To Top of Active Queue Code:[" + bsr_code + "]-Count:[" + bsr_count + "]-Length:[" + bsr_length + "]-Req:[" + bsr_req + "]-Note:[" + bsr_note + "]");
-	const res = await pool.query(" UPDATE bsrqueue SET req_order = req_order + 1 WHERE req_order > 0;");
-	const mov = await pool.query(" INSERT INTO bsrqueue (req_order, bsr_code, bsr_req, bsr_name, bsr_ts, bsr_length, bsr_note) VALUES ($1, $2, $3, $4, $5, $6, $7)",[1,bsr_code,bsr_req,bsr_name,bsr_ts,bsr_length,bsr_note]);
+	const res = await pool.query("UPDATE bsrqueue SET req_order = req_order + 1 WHERE req_order > 0;");
+	const mov = await pool.query("INSERT INTO bsrqueue (req_order, bsr_code, bsr_req, bsr_name, bsr_ts, bsr_length, bsr_note) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+		[1,bsr_code,bsr_req,bsr_name,bsr_ts,bsr_length,bsr_note]);
 }
 
 async function getBsrQueueLength(callback) {
@@ -160,7 +238,6 @@ async function movePendingToActive(bsr_code,bsr_req) {
 		if (typeof pQueue !== 'undefined' && pQueue !== null) {
 			getMapInfo(bsr_code, function(response){
 				var mapData = JSON.parse(response)
-				console.log(pQueue.bsr_req);
 				bsr_name = mapData.name;
 				bsr_ts = pQueue.bsr_ts;
 				bsr_length = mapData.metadata.duration;
@@ -214,6 +291,11 @@ async function getMapInfo(bsr_code, callback) {
 	getPosts();
 }
 
+async function queryUserlistByUser(user_username, callback) {
+	const res = await pool.query("SELECT * FROM userlist WHERE user_username = $1", [ user_username ]);
+	callback( res );
+}
+
 async function queryBsrQueueByCode(bsr_code, callback) {
 	const res = await pool.query("SELECT * FROM bsrqueue WHERE bsr_code = $1", [ bsr_code ]);
 	callback( res );
@@ -230,11 +312,14 @@ async function removeBsrPending(bsr_req) {
 }
 
 async function removeBsrQueue(bsr_code) {
+	console.log("before queryBsrQueueByCode:[" + bsr_code + "]");
 	queryBsrQueueByCode ( bsr_code, async function(by_code){
 		if (by_code.rowCount > 0) {
+			req_order = by_code.rows[0].req_order;
 			console.log("[BOT] Removing from Active Queue Code:[" + bsr_code + "]");
 			const res = await pool.query("DELETE FROM bsrqueue WHERE bsr_code = $1", [ bsr_code ]);
-			const upd = await pool.query("UPDATE bsrqueue SET req_order = req_order - 1 WHERE req_order > $1", [ by_code.rows[0].req_order ]);
+			console.log("[BOT] Rebasing the order from req_order:[" + [ req_order ] + "]");
+			const upd = await pool.query("UPDATE bsrqueue SET req_order = req_order - 1 WHERE req_order > $1", [ req_order ]);
 		}
 	});
 }
@@ -248,11 +333,31 @@ async function removeLastSongByUser(bsr_req) {
 	queryBsrQueueByUsername(bsr_req, async function(user_return){
 		if (user_return.rowCount > 0) {
 			bsr_code = user_return.rows[0].bsr_code;
-			console.log(bsr_code);
 			const rem = await pool.query("DELETE FROM bsrqueue WHERE bsr_req = $1", [ bsr_code ]);
 			const res = await pool.query("UPDATE bsrqueue SET req_order = req_order + 1 WHERE req_order > 0 AND bsr_code != '" + user_return.rows[0].bsr_code + "';");
 		}
 	});
+}
+
+async function getTopQueue(count, callback) {
+	console.log("getTopQueue count:[" + count + "]");
+	const res = await pool.query("SELECT * FROM bsrqueue ORDER BY req_order ASC FETCH FIRST " + count + " ROWS ONLY");
+	console.log(res);
+	callback(res);
+}
+
+async function bsrSkip(count) {
+	console.log("before for loop");
+	for ( let i = 0; i < count; i++){
+		console.log("before getTopQueue:[" + i + "]");
+		getTopQueue(i+1, async function(topRow){
+			console.log("before if:[" + i + "]");
+			if (topRow.rowCount > 0) {
+				console.log("before removeBsrQueue:[" + i + "]");
+				const result = await removeBsrQueue(topRow.rows[0].bsr_code);
+			}
+		});
+	}
 }
 
 run();

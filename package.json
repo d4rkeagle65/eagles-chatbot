@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "dotenv": "^16.4.5",
+    "lodash": "^4.17.21",
     "pg": "^8.11.3",
     "twitch-js": "^2.0.0-beta.45"
   }

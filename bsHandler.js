@@ -91,14 +91,25 @@ async function get_bsrCode(msg, callback) {
 	if (typeof msg === "object") {
 		if (msg.message.includes("(bsr")) {
 			bsr_match = (msg.message.match(/(.*?)\(bsr\s(.*?)\)/));
+			bsr_code = bsr_match[2];
 		} else if (msg.message.includes("!")) {
 			bsr_match = (msg.message.match(/^\!(.*?)\s(\w+)(\s.*)?$/));
+			bsr_code = bsr_match[2];
+		} else if (msg.message.match(/^.*?(\@(.*?)).*?$/)) {
+			get_requester_fromResponse(msg, async function(requester) {
+				dbbsr.getActive_byUser(requester, async function(aResponse) {
+					if (aResponse.rowCount > 0) {
+						bsr_code = aResponse.rows[0].bsr_code;
+					}
+				});
+			});
 		}
 	} else {
 		bsr_match = (msg.match(/((.*))/));
+		bsr_code = bsr_match[2];
 	}
 	
-	callback ( bsr_match[2] );
+	callback ( bsr_code );
 }
 
 async function get_requester_fromResponse(msg, callback) {
@@ -123,7 +134,6 @@ async function get_bsrMsg(msg, callback) {
 		bsr_msg = ""
 	}
 	callback( bsr_msg );
-		console.log("test");
 }
 
 async function addSong_pendingQueue(msg, bsr_att) {
@@ -287,14 +297,12 @@ async function bsChatUser_responses(msg) {
 	}
 
 	if (msg.message.match(/^.*?requested\sby\s(.*?)\sis\snext.*?$/)) {
-		await setQueue("open");
 		get_bsrCode(msg, async function(bsr_code) {
 			dbbsr.removeActive(bsr_code);
 		});
 	}
 
 	if (msg.message.includes("is removed from queue")) {
-		await setQueue("open");
 		get_bsrCode(msg, async function(bsr_code) {
 			dbbsr.removeActive(bsr_code);
 		});
@@ -304,8 +312,8 @@ async function bsChatUser_responses(msg) {
 		setQueue("open");
 	}
 
-	if (msg.message.includes("Queue is closed!")) {
-		dbbsr.setQueue("closed");
+	if (msg.message.includes("Queue is now closed!") || msg.message.includes("Song queue is closed")) {
+		setQueue("closed");
 	}
 }
 

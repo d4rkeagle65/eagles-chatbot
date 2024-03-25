@@ -83,7 +83,7 @@ async function getActive_byCode(bsr_code, callback) {
 }
 
 async function getActive_byUser(user_username, callback) {
-	const aQueue_bUser = await db.pool.query("SELECT * FROM bsrqueue WHERE bsr_req = $1", [ user_username ]);
+	const aQueue_bUser = await db.pool.query("SELECT * FROM bsrqueue WHERE bsr_req = $1 ORDER BY bsr_ts ASC", [ user_username ]);
 	callback(aQueue_bUser);
 }
 

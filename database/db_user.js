@@ -18,33 +18,43 @@ async function partUser(user_username) {
 	});
 }
 
-async function updateUser(user_username, user_badges) {
+async function user_getRole(user_username, user_badges, callback) {
 	return new Promise(resolve => {
+		let user_role = undefined;
+		const roles = ['broadcaster','vip','moderator'];
+		for (var badge in user_badges) {
+			if (roles.indexOf(badge) > -1) {
+				user_role = badge;
+			}
+		}
+
+		if (user_role === undefined) {
+			const roles = ['subscriber'];
+			for (var badge in user_badges) {
+				if (roles.indexOf(badge) > -1) {
+					user_role = badge;
+				}
+			}
+		}
+
+		if (user_role === undefined) {
+			user_role = 'viewer';
+		}
+
+		callback(user_role);
+	});
+}
+
+async function updateUser(user_username, user_badges) {
+	return new Promise(async resolve => {
 		getUser(user_username, async function(userResp) {
 			if (userResp.rowCount > 0) {
 				const update_ts = await db.pool.query("UPDATE userlist SET user_lastactivets = current_timestamp WHERE user_username = $1", [ user_username ]);
 			
 				if (userResp.rows[0].user_type === "unknown" || userResp.rows[0].user_type === "") {
-					const roles = ['broadcaster','vip','moderator'];
-					let user_role_defined = 0;
-					for (var badge in user_badges) {
-						if (roles.indexOf(badge) > -1) {
-							const update_badge = await db.pool.query("UPDATE userlist SET user_type = $1 WHERE user_username = $2", [ badge, user_username ]);
-							user_role_defined = 1;
-						}
-					}
-
-					let user_role = "viewer";
-					if (user_role_defined = 0) {
-						const user_roles = ['subscriber'];
-						for (var badge in user_badges) {
-							if (user_roles.indexOf(badge) > -1) {
-								user_role = badge;
-							}
-						}
-
+					get_userRole(user_username,user_badges, async function(user_role) {
 						const update_badge_viewer = await db.pool.query("UPDATE userlist SET user_type = $1 WHERE user_username = $2", [ user_role, user_username ]);
-					}
+					});
 				}
 
 				if (userResp.rows[0].user_lurk === true) {

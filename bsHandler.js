@@ -172,16 +172,14 @@ async function skipSong(msg) {
 	}
 
 	console.log("[BOT] Skipping top songs in queue, Count:[" + songs_toSkip + "]");
-	for (let i = 1; i <= songs_toSkip; i++) {
-		console.log("[BOT] Skipping song in queue, Number:[" + i + "]");
-		await dbbsr.getActive_byPosition(1, async function(aResponse) {
-			if (aResponse.rowCount > 0) {
-				console.log("[BOT] TEST Code:[" + aResponse.rows[0].bsr_code + "]");
-				// await dbbsr.removeActive(aResponse.rows[0].bsr_code);
-				await sleep(500);
+	dbbsr.getActive_topCount(songs_toSkip, async function (aQueue) {
+		if (aQueue.rowCount > 0) {
+			for (song in aQueue.rows) {
+				console.log("[BOT] Skipping song in queue, Code:[" + aQueue.rows[song].bsr_code + "]");
+				await dbbsr.removeActive(aQueue.rows[song].bsr_code);
 			}
-		});
-	}
+		}
+	});
 }
 
 async function manual_addSong(msg) {

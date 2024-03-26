@@ -95,6 +95,14 @@ async function getActive_byPosition(queue_pos, callback) {
 	});
 }
 
+async function getActive_topCount(top_count, callback) {
+	return new Promise(async resolve => {
+		const aQueue_tCount = await db.pool.query("SELECT * FROM bsrqueue WHERE req_order <= $1", [ top_count ]);
+		callback(aQueue_tCount);
+		resolve();
+	});
+}
+
 async function getQueueLength_active(callback) {
 	const aQueue_len = await db.pool.query("SELECT * FROM bsrqueue");
 	callback(aQueue_len.rowCount);
@@ -118,7 +126,7 @@ async function removeActive(bsr_code){
 			if (aQueue.rowCount > 0) {
 				console.log("[BOT][DB] Removing from active queue, Bsr:[" + bsr_code + "]");
 				const aQueue_rem = await db.pool.query("DELETE FROM bsrqueue WHERE bsr_code = $1", [ bsr_code ]);
-				//console.log("[BOT][DB] Shifting up maps in queue below, Position:[" + aQueue.rows[0].req_order + "]");
+				console.log("[BOT][DB] Shifting up maps in queue below, Position:[" + aQueue.rows[0].req_order + "]");
 				await shiftUp_activeQueue(aQueue.rows[0].req_order);
 				resolve();
 			} else {
@@ -190,5 +198,6 @@ module.exports = {
 	removeActive: removeActive,
 	addActive: addActive,
 	removePending_byCode: removePending_byCode,
-	getQueueLength_active: getQueueLength_active
+	getQueueLength_active: getQueueLength_active,
+	getActive_topCount: getActive_topCount
 };

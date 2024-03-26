@@ -18,7 +18,7 @@ async function partUser(user_username) {
 	});
 }
 
-async function user_getRole(user_username, user_badges, callback) {
+async function get_userRole(user_username, user_badges, callback) {
 	return new Promise(resolve => {
 		let user_role = undefined;
 		const roles = ['broadcaster','vip','moderator'];

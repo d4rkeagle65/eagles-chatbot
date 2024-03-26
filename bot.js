@@ -15,14 +15,14 @@ const run = async () => {
 	await chat.connect();
 	await chat.join(channel);
 	
-	chat.on('PRIVMSG', (msg) => { onMessage(msg) });
+	chat.on('PRIVMSG', (msg) => { onMessage(msg,chat) });
 	chat.on('JOIN', (msg) => { onUser_join(msg) });
 	chat.on('PART', (msg) => { onUser_part(msg) });
 }
 
 run();
 
-async function onMessage(msg) {
+async function onMessage(msg,chat) {
 	await dbuser.updateUser(msg.username,msg.tags.badges);
 	await ch.chatHandler(msg);
 }

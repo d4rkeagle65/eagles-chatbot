@@ -226,7 +226,9 @@ async function moveSong_pendingToActive(bsr_code,requester) {
 					} else {
 						get_mapInfo(bsr_code, async function(mapInfo) {
 							var mapData = JSON.parse(mapInfo);
-							let bsr_name = mapData.name.trim();
+							console.log("mapData.name:[" + mapData.name + "]");
+							let bsr_name = (mapData.name.replace(/[^\x00-\x7F]/g, " ")).trim();
+							console.log("bsr_name:[" + bsr_name + "]");
 							let bsr_ts = pResponse.rows[0].bsr_ts;
 							let bsr_length = mapData.metadata.duration;
 							let bsr_note = pResponse.rows[0].bsr_note;

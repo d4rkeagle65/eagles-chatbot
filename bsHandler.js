@@ -88,11 +88,12 @@ async function reset_userList() {
 }
 
 async function get_bsrCode(msg, callback) {
+	let bsr_code = "";
 	if (typeof msg === "object") {
 		if (msg.message.includes("(bsr")) {
 			bsr_match = (msg.message.match(/(.*?)\(bsr\s(.*?)\)/));
 			bsr_code = bsr_match[2];
-		} else if (msg.message.includes("!")) {
+		} else if (msg.message.match(/^\!(.*?)\s(\w+)(\s.*)?$/)) {
 			bsr_match = (msg.message.match(/^\!(.*?)\s(\w+)(\s.*)?$/));
 			bsr_code = bsr_match[2];
 		} else if (msg.message.match(/^.*?(\@(.*?)).*?$/)) {
@@ -103,7 +104,7 @@ async function get_bsrCode(msg, callback) {
 					}
 				});
 			});
-		}
+		} 
 	} else {
 		bsr_match = (msg.match(/((.*))/));
 		bsr_code = bsr_match[2];
@@ -141,9 +142,11 @@ async function addSong_pendingQueue(msg, bsr_att) {
 		check_queueState(async function(state) {
 			if (state) {
 				get_bsrCode(msg, async function(bsr_code) {
-					get_bsrMsg(msg, async function(bsr_msg) {
-						dbbsr.addPending(bsr_code,msg.username.toLowerCase(),bsr_msg,bsr_att);
-					});
+					if (bsr_code != "") {
+						get_bsrMsg(msg, async function(bsr_msg) {
+							dbbsr.addPending(bsr_code,msg.username.toLowerCase(),bsr_msg,bsr_att);
+						});
+					}
 				});
 			}
 		});
@@ -186,7 +189,7 @@ async function manual_addSong(msg) {
 	get_bsrCode(msg, async function(bsr_code) {
 		get_requester_fromResponse(msg, async function(requester) {
 			await dbbsr.addPending(bsr_code,requester,"cbinsertsong",false);
-			await sleep(500);
+			await sleep(800);
 			await moveSong_pendingToActive(bsr_code,requester);
 			if (msg.message.match(/^.*?(\d+)$/)) {
 				let mSong_pos = msg.message.match(/^.*?(\d+)$/);

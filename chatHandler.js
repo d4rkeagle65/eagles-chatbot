@@ -25,8 +25,6 @@ async function chatHandler(msg, chat) {
 					bs.addSong_pendingQueue(msg, false);
 				} else if (msg.message.includes("!att")) {
 					bs.addSong_pendingQueue(msg, true);
-				} else if (msg.message.includes("!mtt")) {
-					bs.moveSong(msg,1);
 				}
 			}
 		}

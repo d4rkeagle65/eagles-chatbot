@@ -190,6 +190,7 @@ module.exports = {
 	addPending: addPending,
 	getActive_byCode: getActive_byCode,
 	getActive_byPosition: getActive_byPosition,
+	getActive_byUser: getActive_byUser,
 	shiftDown_activeQueue: shiftDown_activeQueue,
 	shiftUp_activeQueue: shiftUp_activeQueue,
 	moveSong_activeQueue: moveSong_activeQueue,

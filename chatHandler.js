@@ -58,6 +58,20 @@ async function chatHandler(msg, chat) {
 			if (msg.message.includes("!cbskip")) {
 				bs.skipSong(msg);
 			}
+			if (msg.message.includes("!cbqmu")) {
+				bs.listQueue_usersMissing(msg, async function(missingUsers) {
+					let response = "Everyone's here!";
+					if (missingUsers.length > 0) {
+						let userStr = "";
+						for(user in missingUsers) {
+							userStr = userStr + "@" + missingUsers[user] + ", ";
+						}
+
+						response = "Missing Users w/ Songs in Queue: " + userStr.replace(/,\s$/,'').trim() + ".";
+					}
+					chat.say(channel,response);
+				});
+			}
 		}
 
 		// Chat reponses from the user defined for BS+ responses

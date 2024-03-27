@@ -222,7 +222,7 @@ async function add_mapData(bsr_code) {
 	return new Promise(async resolve => {
 		get_mapInfo(bsr_code, async function(mapInfo) {
 			var mapData = JSON.parse(mapInfo);
-			let bsr_name = (mapData.name.replace(/[^\x00-\x7F]/g, " ")).trim();
+			let bsr_name = (mapData.name.replace(/[^\x00-\x7F]/g, " ").replace(/\s+/g, " ")).trim();
 			let bsr_length = mapData.metadata.duration;
 			await dbbsr.updateActive_mapInfo(bsr_code,bsr_name,bsr_length);
 		});
@@ -258,6 +258,23 @@ async function moveSong_pendingToActive(bsr_code,requester) {
 				console.log("[BOT] Map not found in pending queue with Bsr:[" + bsr_code + "]");
 				resolve();
 			}
+		});
+	});
+}
+
+async function listQueue_usersMissing(msg, callback) {
+	return new Promise(resolve => {
+		dbbsr.getActive_byMissing( async function(missingUsers) {
+			let userlist = [];
+			if (missingUsers.rowCount > 0) {
+				for (song in missingUsers.rows) {
+					if (missingUsers.rows[song].bsr_req_here === false) {
+						userlist.push(missingUsers.rows[song].bsr_req);
+					}
+				}
+			}
+			callback(userlist);
+			resolve();
 		});
 	});
 }
@@ -335,5 +352,6 @@ module.exports = {
 	moveSong: moveSong,
 	reset_userList: reset_userList,
 	removeSong_activeQueue_byMsg: removeSong_activeQueue_byMsg,
-	bsChatUser_responses: bsChatUser_responses
+	bsChatUser_responses: bsChatUser_responses,
+	listQueue_usersMissing: listQueue_usersMissing
 }

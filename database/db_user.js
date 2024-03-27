@@ -1,10 +1,12 @@
 const db = require("./db");
+const dbbsr = require("./db_bsr");
 
 async function joinUser(user_username) {
 	getUser(user_username, async function(userResp){
 		if (userResp.rowCount === 0) {
 			console.log("[BOT] User Joined Username:[" + user_username + "]");
 			const insert_user = await db.pool.query("INSERT INTO userlist (user_username,user_joints,user_type,user_lurk) VALUES ($1, current_timestamp,$2,false)", [ user_username, "unknown" ]);
+			updateUser_activeQueue(user_username,true);
 		}
 	});
 }
@@ -14,6 +16,7 @@ async function partUser(user_username) {
 		if (userResp.rowCount > 0) {
 			console.log("[BOT] User Left Username:[" + user_username + "]");
 			const delete_user = await db.pool.query("DELETE FROM userlist WHERE user_username = $1", [ user_username ]);
+			updateUser_activeQueue(user_username,false);
 		}
 	});
 }
@@ -60,11 +63,26 @@ async function updateUser(user_username, user_badges) {
 				if (userResp.rows[0].user_lurk === true) {
 					const update_unlurk = await db.pool.query("UPDATE userlist SET user_lurk = false WHERE user_username = $1", [ user_username ]);
 				}
+				
+				updateUser_activeQueue(user_username, true);
 				resolve();
 			} else {
 				joinUser(user_username);
 				resolve();
 			}
+		});
+	});
+}
+
+async function updateUser_activeQueue(user_username, user_status) {
+	return new Promise(async resolve => {
+		dbbsr.getActive_byUser(user_username, async function(aQueue) {
+			if (aQueue.rowCount > 0) {
+				for (row in aQueue.rows) {
+					dbbsr.updateActive_reqHere(aQueue.rows[row].bsr_code, user_status);
+				}
+			}
+			resolve();
 		});
 	});
 }

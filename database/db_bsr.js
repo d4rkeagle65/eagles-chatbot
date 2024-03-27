@@ -95,6 +95,14 @@ async function getActive_byPosition(queue_pos, callback) {
 	});
 }
 
+async function getActive_byMissing(callback) {
+	return new Promise(async resolve => {
+		const aQueue_bMissing = await db.pool.query("SELECT * FROM bsrqueue WHERE bsr_req_here = false");
+		callback(aQueue_bMissing);
+		resolve();
+	});
+}
+
 async function getActive_topCount(top_count, callback) {
 	return new Promise(async resolve => {
 		const aQueue_tCount = await db.pool.query("SELECT * FROM bsrqueue WHERE req_order <= $1", [ top_count ]);
@@ -112,8 +120,8 @@ async function addActive(bsr_code, bsr_req, bsr_ts, bsr_note){
 	return new Promise(resolve => {
 		getQueueLength_active( async function(aQueueLength) {
 			let bsr_count = aQueueLength + 1;
-			const aQueue_add = await db.pool.query("INSERT INTO bsrqueue (req_order, bsr_code, bsr_req, bsr_ts, bsr_note) VALUES ($1, $2, $3, $4, $5)", 
-				[ bsr_count, bsr_code, bsr_req, bsr_ts, bsr_note]);
+			const aQueue_add = await db.pool.query("INSERT INTO bsrqueue (req_order, bsr_code, bsr_req, bsr_req_here, bsr_ts, bsr_note) VALUES ($1, $2, $3, $4, $5, $6)", 
+				[ bsr_count, bsr_code, bsr_req, true, bsr_ts, bsr_note]);
 			console.log("[BOT][DB] Adding To Active Queue Code:[" + bsr_code + "]-Req:[" + bsr_req + "]-Note:[" + bsr_note + "]");
 			resolve();
 		});
@@ -126,6 +134,17 @@ async function updateActive_mapInfo(bsr_code,bsr_name,bsr_length) {
 			if (aQueue.rowCount > 0) {
 				const aQueue_update = await db.pool.query("UPDATE bsrqueue SET bsr_name = $2,bsr_length = $3 WHERE bsr_code = $1", [ bsr_code, bsr_name, bsr_length ]);
 				console.log("[BOT][DB] Updating Song with Map Info, Code:[" + bsr_code + "-Length:[" + bsr_length + "]-Name:[" + bsr_name + "]");
+			}
+			resolve();
+		});
+	});
+}
+
+async function updateActive_reqHere(bsr_code, bsr_req_here) {
+	return new Promise(resolve => {
+		getActive_byCode(bsr_code, async function(aQueue) {
+			if (aQueue.rowCount > 0) {
+				const aQueue_update = await db.pool.query("UPDATE bsrqueue SET bsr_req_here = $2 WHERE bsr_code = $1", [ bsr_code, bsr_req_here ]);
 			}
 			resolve();
 		});
@@ -203,6 +222,7 @@ module.exports = {
 	getActive_byCode: getActive_byCode,
 	getActive_byPosition: getActive_byPosition,
 	getActive_byUser: getActive_byUser,
+	getActive_byMissing: getActive_byMissing,
 	shiftDown_activeQueue: shiftDown_activeQueue,
 	shiftUp_activeQueue: shiftUp_activeQueue,
 	moveSong_activeQueue: moveSong_activeQueue,
@@ -213,5 +233,6 @@ module.exports = {
 	removePending_byCode: removePending_byCode,
 	getQueueLength_active: getQueueLength_active,
 	getActive_topCount: getActive_topCount,
-	updateActive_mapInfo: updateActive_mapInfo
+	updateActive_mapInfo: updateActive_mapInfo,
+	updateActive_reqHere: updateActive_reqHere
 };

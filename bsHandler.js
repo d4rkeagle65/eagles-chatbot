@@ -293,10 +293,11 @@ async function bsChatUser_responses(msg) {
 
 	if (msg.message.includes("is now on top of queue")) {
 		await setQueue("open");
-		get_bsrCode(msg, function(bsr_code) {
-			dbbsr.getPending_byCode(bsr_code, function(pResponse) {
+		get_bsrCode(msg, async function(bsr_code) {
+			dbbsr.getPending_byCode(bsr_code, async function(pResponse) {
 				if (pResponse.rowCount > 0) {
-					moveSong_pendingToActive(bsr_code,pResponse.rows[0].bsr_req);
+					await moveSong_pendingToActive(bsr_code,pResponse.rows[0].bsr_req);
+					moveSong(msg, 1);
 				} else {
 					moveSong(msg, 1);
 				}

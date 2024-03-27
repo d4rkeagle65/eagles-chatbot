@@ -218,6 +218,17 @@ async function moveSong(msg, target_queue_pos) {
 	});
 }
 
+async function add_mapData(bsr_code) {
+	return new Promise(async resolve => {
+		get_mapInfo(bsr_code, async function(mapInfo) {
+			var mapData = JSON.parse(mapInfo);
+			let bsr_name = (mapData.name.replace(/[^\x00-\x7F]/g, " ")).trim();
+			let bsr_length = mapData.metadata.duration;
+			await dbbsr.updateActive_mapInfo(bsr_code,bsr_name,bsr_length);
+		});
+	});
+}
+
 async function moveSong_pendingToActive(bsr_code,requester) {
 	return new Promise(resolve => {
 		dbbsr.getPending_byCode(bsr_code, async function(pResponse) {
@@ -227,26 +238,20 @@ async function moveSong_pendingToActive(bsr_code,requester) {
 						console.log("[BOT] Map already in the active queue, Code:[" + bsr_code + "]");
 						resolve();
 					} else {
-						get_mapInfo(bsr_code, async function(mapInfo) {
-							var mapData = JSON.parse(mapInfo);
-							console.log("mapData.name:[" + mapData.name + "]");
-							let bsr_name = (mapData.name.replace(/[^\x00-\x7F]/g, " ")).trim();
-							console.log("bsr_name:[" + bsr_name + "]");
-							let bsr_ts = pResponse.rows[0].bsr_ts;
-							let bsr_length = mapData.metadata.duration;
-							let bsr_note = pResponse.rows[0].bsr_note;
-							let bsr_req = pResponse.rows[0].bsr_req;
+						let bsr_ts = pResponse.rows[0].bsr_ts;
+						let bsr_note = pResponse.rows[0].bsr_note;
+						let bsr_req = pResponse.rows[0].bsr_req;
 						
-							await dbbsr.addActive(bsr_code,bsr_req,bsr_name,bsr_ts,bsr_length,bsr_note);
-							await dbbsr.removePending_byCode(bsr_code);
-						
-							if (pResponse.rows[0].req_att === true) {
-								await moveSong(bsr_code, 1);
-								resolve();
-							} else {
-								resolve();
-							}
-						});
+						await dbbsr.addActive(bsr_code,bsr_req,bsr_ts,bsr_note);
+						await dbbsr.removePending_byCode(bsr_code);
+						add_mapData(bsr_code);
+
+						if (pResponse.rows[0].req_att === true) {
+							await moveSong(bsr_code, 1);
+							resolve();
+						} else {
+							resolve();
+						}
 					}
 				});
 			} else {

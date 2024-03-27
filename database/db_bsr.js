@@ -108,13 +108,25 @@ async function getQueueLength_active(callback) {
 	callback(aQueue_len.rowCount);
 }
 
-async function addActive(bsr_code, bsr_req, bsr_name, bsr_ts, bsr_length, bsr_note){
+async function addActive(bsr_code, bsr_req, bsr_ts, bsr_note){
 	return new Promise(resolve => {
 		getQueueLength_active( async function(aQueueLength) {
 			let bsr_count = aQueueLength + 1;
-			const aQueue_add = await db.pool.query("INSERT INTO bsrqueue (req_order, bsr_code, bsr_req, bsr_name, bsr_ts, bsr_length, bsr_note) VALUES ($1, $2, $3, $4, $5, $6, $7)", 
-				[ bsr_count, bsr_code, bsr_req, bsr_name, bsr_ts, bsr_length, bsr_note]);
-			console.log("[BOT][DB] Adding To Active Queue Code:[" + bsr_code + "]-Length:[" + bsr_length + "]-Req:[" + bsr_req + "]-Note:[" + bsr_note + "]");
+			const aQueue_add = await db.pool.query("INSERT INTO bsrqueue (req_order, bsr_code, bsr_req, bsr_ts, bsr_note) VALUES ($1, $2, $3, $4, $5)", 
+				[ bsr_count, bsr_code, bsr_req, bsr_ts, bsr_note]);
+			console.log("[BOT][DB] Adding To Active Queue Code:[" + bsr_code + "]-Req:[" + bsr_req + "]-Note:[" + bsr_note + "]");
+			resolve();
+		});
+	});
+}
+
+async function updateActive_mapInfo(bsr_code,bsr_name,bsr_length) {
+	return new Promise(resolve => {
+		getActive_byCode(bsr_code, async function(aQueue) {
+			if (aQueue.rowCount > 0) {
+				const aQueue_update = await db.pool.query("UPDATE bsrqueue SET bsr_name = $2,bsr_length = $3 WHERE bsr_code = $1", [ bsr_code, bsr_name, bsr_length ]);
+				console.log("[BOT][DB] Updating Song with Map Info, Code:[" + bsr_code + "-Length:[" + bsr_length + "]-Name:[" + bsr_name + "]");
+			}
 			resolve();
 		});
 	});
@@ -200,5 +212,6 @@ module.exports = {
 	addActive: addActive,
 	removePending_byCode: removePending_byCode,
 	getQueueLength_active: getQueueLength_active,
-	getActive_topCount: getActive_topCount
+	getActive_topCount: getActive_topCount,
+	updateActive_mapInfo: updateActive_mapInfo
 };

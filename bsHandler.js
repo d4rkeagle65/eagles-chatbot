@@ -269,7 +269,9 @@ async function listQueue_usersMissing(msg, callback) {
 			if (missingUsers.rowCount > 0) {
 				for (song in missingUsers.rows) {
 					if (missingUsers.rows[song].bsr_req_here === false) {
-						userlist.push(missingUsers.rows[song].bsr_req);
+						if (! (userlist.includes(missingUsers.rows[song].bsr_req))) {
+							userlist.push(missingUsers.rows[song].bsr_req);
+						}
 					}
 				}
 			}

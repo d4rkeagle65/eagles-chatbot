@@ -24,7 +24,7 @@ run();
 
 async function onMessage(msg,chat) {
 	await dbuser.updateUser(msg.username,msg.tags.badges);
-	await ch.chatHandler(msg);
+	await ch.chatHandler(msg,chat);
 }
 
 async function onUser_join(msg) {

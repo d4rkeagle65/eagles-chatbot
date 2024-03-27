@@ -69,7 +69,7 @@ async function chatHandler(msg, chat) {
 
 						response = "Missing Users w/ Songs in Queue: " + userStr.replace(/,\s$/,'').trim() + ".";
 					}
-					chat.say(channel,response);
+					console.log("[BOT] CBQMU " + response);
 				});
 			}
 		}

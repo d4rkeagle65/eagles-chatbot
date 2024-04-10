@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+<<<<<<< HEAD
+=======
+    "bullmq": "^5.5.1",
+>>>>>>> origin/rebuild
+    "dotenv": "^16.4.5",
+    "ioredis": "^5.3.2",
+    "pg": "^8.11.3",
+    "twitch-js": "^2.0.0-beta.45"
+  }
+}

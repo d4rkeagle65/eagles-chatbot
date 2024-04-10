@@ -1,0 +1,14 @@
+[Unit]
+Description=eagles-chatbot-rebuild nodejs
+After=network.target
+
+[Service]
+Type=simple
+User=ecb_user
+ExecStartPre=redis-cli flushall
+ExecStart=/usr/bin/node /data/eagles-chatbot-rebuild/backend/backend.js 2>&1 | tee
+WorkingDirectory=/data/eagles-chatbot-rebuild/backend
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -2,6 +2,7 @@ const path = require("path");
 const dotenv = require("dotenv").config({ path: path.join(__dirname, "..", "..", ".env") });
 
 const dbbsr = require(path.join(__dirname, "..", "database", "db_bsr.js"));
+const map = require(path.join(__dirname, "mapHandler.js"));
 
 // String Handlers
 async function get_bsrCode(job,msg) {
@@ -198,6 +199,10 @@ async function insertMap_aQueue(job,bsr_code,tgt_pos) {
 							resolve(job.updateProgress("[BOT][BH]" + aMap_log));
 						});
 					}
+				}).catch( async eMsg => {
+					await dbbsr.moveMap_inQueue(job,bsr_code,bsr_req,tgt_pos).then( () => {
+						resolve(job.updateProgress("[BOT][BH]" + aMap_log));
+					});
 				});
 			} else {
 				resolve(job.updateProgress("[BOT][BH]" + aMap_log));

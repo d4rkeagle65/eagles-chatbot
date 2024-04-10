@@ -2,7 +2,6 @@ const path = require("path");
 const dotenv = require("dotenv").config({ path: path.join(__dirname, "..", "..", ".env") });
 
 const dbbsr = require(path.join(__dirname, "..", "database", "db_bsr.js"));
-const map = require(path.join(__dirname, "mapHandler.js"));
 
 // String Handlers
 async function get_bsrCode(job,msg) {
@@ -281,7 +280,7 @@ async function bsChatUser_responses(job) {
 				dbbsr.remMap_byCode(job,bsr_code,"active").then( () => {
 					resolve();
 				}).catch(eMsg => {
-					job.updateProgress("[BOT][BH]" + eMsg);
+					resolve(job.updateProgress("[BOT][BH]" + eMsg));
 				});
 			});
 		} else { breakPromise++; }

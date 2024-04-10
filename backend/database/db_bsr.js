@@ -103,7 +103,7 @@ async function moveMap_inQueue(job,bsr_code,bsr_req,tgt_pos) {
 				job.updateProgress("[BT][BD] Moving Map to oa:[" + newVals[0] + "]-ob:[" + newVals[1] + "]");
 				let query = "UPDATE bsractive SET oa = $1, ob = $2 WHERE bsr_code = $3";
 				await db.pool.query(query, [ newVals[0], newVals[1], bsr_code ]).then(() => {
-					resolve(console.log("[BOT][DB] Moving Map In Queue Code:[" + bsr_code + "]-Tgt:[" + tgt_pos + "]"));
+					resolve(job.updateProgress("[BOT][DB] Moving Map In Queue Code:[" + bsr_code + "]-Tgt:[" + tgt_pos + "]"));
 				});
 			});
 		});

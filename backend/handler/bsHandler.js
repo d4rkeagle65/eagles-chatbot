@@ -206,6 +206,8 @@ async function insertMap_aQueue(job,bsr_code,tgt_pos) {
 			} else {
 				resolve(job.updateProgress("[BOT][BH]" + aMap_log));
 			}
+		}).catch( () => {
+			resolve(job.updateProgress("[BOT][BH] Failed Adding to Active Queue Code:[" + bsr_code + "]"));
 		});
 	});
 }
@@ -213,6 +215,7 @@ async function handle_qCommand(job) {
 	job.updateProgress("[BOT][BH] !queue Command Detected");
 	return new Promise(async resolve => {
 		let bsrList = job.data.msg.message.split(":")[1].split(",");
+
 		for await (const [key, bsr] of bsrList.entries()) {
 			job.log("[BOT][BH] Handling Key:[" + key + "]-bsr:[" + bsr + "]");
 			let req_pos = Number(key) + 1;
@@ -220,11 +223,9 @@ async function handle_qCommand(job) {
 				await dbbsr.getMap_byCode(job,bsr_code,"active").then( async mRes => {
 					await dbbsr.getMap_byPos(job,req_pos).then( async map_info => {
 						if ( bsr_code === map_info.bsr_code ) {
-							resolve();
+							job.updateProgress("[BOT][DB] Correct Spot for Map:[" + bsr_code + "]-Pos:[" + req_pos + "]");
 						} else {
-							await dbbsr.moveMap_inQueue(job,bsr_code,"",req_pos).then( () => {
-								resolve();
-							});
+							await dbbsr.moveMap_inQueue(job,bsr_code,"",req_pos);
 						}
 					}).catch( eMsg => {
 						job.updateProgress("[BOT][BH]" + eMsg);

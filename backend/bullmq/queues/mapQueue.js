@@ -8,7 +8,7 @@ const setUp_mapWorker = require(path.join(__dirname, "..", "workers", "mapWorker
 const connection = new IORedis(process.env.REDDISURL, { maxRetriesPerRequest: null });
 
 const mapQueue = new Queue("mapQueue", { connection, removeOnComplete: true, removeOnFail: 100 });
-usrQueue.setMaxListeners(mapQueue.getMaxListeners() + 100);
+mapQueue.setMaxListeners(mapQueue.getMaxListeners() + 100);
 
 setUp_mapWorker(connection);
 

@@ -256,9 +256,15 @@ async function bsChatUser_responses(job) {
 			'maps are not allowed',
 			'this song has no difficulty',
 			'this song rating is too low',
-			'song is too long',
+			'this song is too long',
+			'this song is too short',
 			'not found',
+			'this song is too old',
+			'this song is too recent',
 			'Search is disabled',
+			'BeatSage maps are not allowed',
+			'Ranked maps are not allowed',
+			'Invalid key'
 		];
 		const bsFail_match = bsFailMsgs.filter(str => job.data.msg.message.includes(str));
 		if (bsFail_match.length > 0) {
@@ -304,7 +310,8 @@ async function bsChatUser_responses(job) {
 		} else { breakPromise++; }
 
 		// BS+ Message For Opening the Queue
-		if (job.data.msg.message.includes("Queue is open!")) {
+		if (job.data.msg.message.includes("Queue is open!") || 
+		    job.data.msg.message.includes("Queue is now open!")) {
 			resolve(setBSP_queueState(job,"open"));
 		} else { breakPromise++; }
 

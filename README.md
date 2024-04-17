@@ -31,6 +31,7 @@ Initially developed by d4rkeagle6591 for Twitch streamer XORoseGold.
     - Command for Users to See How Long Until Their Map Is Played
     - Command For Users to See Which Maps They Added to the Queue
     - Automatic !mtt When User Directly Subscribes or Gifts Another User a Twitch Subscription
+    - !cbmu Command for Displaying Missing Users with Songs in Queue
 
 ## Known Issues
     - If the streamer uses the "skip" option within Beat Saber, there is no message sent to chat by BS+.

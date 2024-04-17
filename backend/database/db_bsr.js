@@ -187,7 +187,7 @@ async function updateMap_bsInfo(job,bsr_code,bsr_name,bsr_length) {
 				resolve("[BOT][DB] Updated Map with Info Code:[" + bsr_code + "]-Length:[" + bsr_length + "]-Name:[" + bsr_name + "]");
 			});
 		}).catch(eMsg => {
-			resolve(job.updateProgress("[BOT][DB]" + eMsg));
+			resolve(job.updateProgress("[BOT]" + eMsg));
 		});
 	});
 }

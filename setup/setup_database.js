@@ -64,7 +64,7 @@ async function dbSetup() {
 		await db.pool.query("INSERT INTO bsrsettings (setting_name,setting_value) VALUES('queue_state','closed')");
 
 		console.log("Adding bsractive INSERT Notification");
-		await db.pool.query(`CREATE FUNCTION notify_bsractive()
+		await db.pool.query(`CREATE OR REPLACE FUNCTION notify_bsractive()
 				     	RETURNS trigger 
 					LANGUAGE plpgsql
 				     AS $function$

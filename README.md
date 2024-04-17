@@ -4,7 +4,7 @@ This is a chatbot built for Twitch to be used by streamers utilizing the mod Bea
 
 Utilizing NodeJS, PostgreSQL, BullMQ and Redis. 
 
-The backend watches the streamers Twitch chat for specific commands used by users and moderators for BS+ actions. It also monitors for response messages by the user account utilized by the BS+ Twitch plugin. Based on these chats it develops a database of what the map request queue is built up to in its entirety. When each map is added to the active queue, it reaches out to BeastSaber and BeatSaver's API's to aquire map info to augment data in the database and provide additional functionality.
+The backend watches the streamers Twitch chat for specific commands used by users and moderators for BS+ actions. It also monitors for response messages by the user account utilized by the BS+ Twitch plugin. Based on these chats it develops a database of what the map request queue is built up to in its entirety. When each map is added to the active queue, it reaches out to BeatSaver's API to aquire map info to augment data in the database and provide additional functionality.
 
 Initially developed by d4rkeagle6591 for Twitch streamer XORoseGold.
 
@@ -20,6 +20,7 @@ Initially developed by d4rkeagle6591 for Twitch streamer XORoseGold.
     - Last Active Timestamps
     - Lurk Status if !lurk Command is Utilized
     - When User Joined the Streamers Chat
+    - What Role the User Has in Twitch (Viewer,Subscriber,VIP,Moderator,Broadcaster)
 
 ## Planned Features
     - Web Frontend Allowing Users to View Full Queue In Order with ReactJS
@@ -34,4 +35,4 @@ Initially developed by d4rkeagle6591 for Twitch streamer XORoseGold.
 ## Known Issues
     - If the streamer uses the "skip" option within Beat Saber, there is no message sent to chat by BS+.
         - Planning on extending the !queue self-repair to remove songs at the top of the chatbots queue that are not in the command output.
-        - Workaround !cbskip command for a Twitch mod to skip a number of maps at the top of the queue.
+        - Planned: Workaround !cbskip command for a Twitch mod to skip a number of maps at the top of the queue.

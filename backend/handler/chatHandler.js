@@ -8,15 +8,15 @@ async function chatHandler(job) {
 	return new Promise(async resolve => {
 
 		// !bsr, !modadd, and !att Commands to Add Maps to Queue
-		if (msg.message.match(/^\!(bsr|modadd|att).*$/)) {
-			if (msg.message.includes("!bsr")) {
+		if (msg.message.match(/^\!(bsr\s|modadd\s|att\s).*$/)) {
+			if (msg.message.match(/\!bsr\s/)) {
 				job.updateProgress("[BOT][MP] !bsr Command Detected");
 				resolve(bs.addMap_pQueue(job, false));
 			}
 			if (msg.tags.isModerator === true || msg.tags.badges.broadcaster === true) {
-				if (msg.message.includes("!modadd")) {
+				if (msg.message.match(/\!modadd\s/)) {
 					resolve(bs.addMap_pQueue(job, false));
-				} else if (msg.message.includes("!att")) {
+				} else if (msg.message.match(/\!att\s/)) {
 					resolve(bs.addMap_pQueue(job, true));
 				}
 			}

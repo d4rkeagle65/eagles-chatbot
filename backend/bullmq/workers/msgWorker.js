@@ -9,7 +9,7 @@ const setUp_msgWorker = (connection) => {
 	worker = new Worker("msgQueue", msgProcPath, {
 		connection: connection,
 		autorun: true,
-		removeOnComplete: { count: 10 }
+		removeOnComplete: { count: 100 }
 	});
 
 	worker.on("active", (job) => {

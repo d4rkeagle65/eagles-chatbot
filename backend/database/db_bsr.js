@@ -129,7 +129,7 @@ async function detMap_newPos(job,bsr_code,tgt_pos,eQueue) {
 							if (tgt_pos === 1) {
 								resolve([ Number(oa), Number(ob) + 1 ]);
 							} else {
-								resolve([ Number(oa) + 1, Number(ob) ]);
+								resolve([ Number(oa) + 1, 1]);
 							}
 						});
 					});
@@ -183,7 +183,7 @@ async function updateMap_bsInfo(job,bsr_code,bsr_name,bsr_length) {
 	return new Promise(resolve => {
 		getMap_byCode(job,bsr_code,"active").then( async () => {
 			let query = "UPDATE bsractive SET bsr_name = $2, bsr_length = $3 WHERE bsr_code = $1";
-			await db.pool.query(queue, [ bsr_code, bsr_name, bsr_length ]).then( () => {
+			await db.pool.query(query, [ bsr_code, bsr_name, bsr_length ]).then( () => {
 				resolve("[BOT][DB] Updated Map with Info Code:[" + bsr_code + "]-Length:[" + bsr_length + "]-Name:[" + bsr_name + "]");
 			});
 		}).catch(eMsg => {

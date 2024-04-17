@@ -7,7 +7,7 @@ const setUp_msgWorker = require(path.join(__dirname, "..", "workers", "msgWorker
 
 const connection = new IORedis(process.env.REDDISURL, { maxRetriesPerRequest: null });
 
-const msgQueue = new Queue("msgQueue", { connection, removeOnComplete: true, removeOnFail: 100 });
+const msgQueue = new Queue("msgQueue", { connection, removeOnComplete: 100, removeOnFail: 100 });
 msgQueue.setMaxListeners(msgQueue.getMaxListeners() + 100);
 
 setUp_msgWorker(connection);

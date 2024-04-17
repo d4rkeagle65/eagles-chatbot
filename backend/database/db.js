@@ -15,6 +15,9 @@ const pool = new Pool({
 	max: 20,
 });
 
+const conStr = "postgres://" + pguser + ":" + pgpass + "@localhost/" + pgdb;
+
 module.exports = { 
-	pool: pool
+	pool: pool,
+	conStr: conStr
 };

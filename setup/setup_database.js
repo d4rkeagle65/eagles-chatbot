@@ -62,6 +62,19 @@ async function dbSetup() {
 
 		console.log("Adding queue_state Setting to bsrsettings Table");
 		await db.pool.query("INSERT INTO bsrsettings (setting_name,setting_value) VALUES('queue_state','closed')");
+
+		console.log("Adding bsractive INSERT Notification");
+		await db.pool.query(`CREATE FUNCTION notify_bsractive()
+				     	RETURNS trigger 
+					LANGUAGE plpgsql
+				     AS $function$
+				     BEGIN
+				       PERFORM pg_notify('new_bsractive', row_to_json(NEW)::text );
+				       RETURN NULL;
+				     END;
+				     $function$`);
+		await db.pool.query(`CREATE TRIGGER updated_bsractive_trigger AFTER INSERT ON bsractive
+				        FOR EACH ROW EXECUTE PROCEDURE notify_bsractive();`);
 		resolve();
 	});
 }

@@ -34,7 +34,9 @@ async function partUser(job,username) {
 	return new Promise(async resolve => {
 		getUser(job,username).then( async user => {
 			await db.pool.query("DELETE FROM userlist WHERE user_username = $1", [ username ]).then( () => {
-				resolve(job.updateProgress("[BOT][DBU] User Left Chat Username:[" + username + "]"));
+				updateUser_aQueue(job,username,false).then( () => {
+					resolve(job.updateProgress("[BOT][DBU] User Left Chat Username:[" + username + "]"));
+				});
 			});
 		}).catch( () => {
 			resolve();

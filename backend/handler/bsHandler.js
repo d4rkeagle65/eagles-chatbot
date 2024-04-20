@@ -119,8 +119,8 @@ async function remMap_pQueue_byReq(job) {
 async function moveMap_pToActive(job,bsr_code,bsr_req) {
 	return new Promise(resolve => {
 		dbbsr.getQueue_byUser(job,"pending",bsr_req).then(pQueue =>{
-			dbbsr.getMap_byCode(job,pQueue.rows[0].bsr_code,"active").then(eMsg => {
-				resolve(job.updateProgress("[BOT][BH][C] Already Found in Active Queue Code:[" + pQueue.rows[0].bsr_code + "]"));
+			dbbsr.getMap_byCode(job,bsr_code,"active").then(eMsg => {
+				resolve(job.updateProgress("[BOT][BH][C] Already Found in Active Queue Code:[" + bsr_code + "]"));
 			}).catch(async aQueue => {
 				let bsr_ts = pQueue.rows[0].bsr_ts;
 				let bsr_note = pQueue.rows[0].bsr_note;
@@ -129,13 +129,13 @@ async function moveMap_pToActive(job,bsr_code,bsr_req) {
 				let sus_remap = false;
 				if (pQueue.rows[0].bsr_code != bsr_code) {
 					sus_remap = true;
+					job.updateProgress("[BOT][BH] Remap Detected, Requested:[" + pQueue.rows[0].bsr_code + "]-Remap:[" + bsr_code + "]");
 				}
 
-				await dbbsr.addMap_aQueue(job, pQueue.rows[0].bsr_code, bsr_req, bsr_ts, bsr_note, req_att, sus_remap).then(async aMap_log => {
+				await dbbsr.addMap_aQueue(job, bsr_code, bsr_req, bsr_ts, bsr_note, req_att, sus_remap).then(async aMap_log => {
 					job.updateProgress("[BOT][BH]" + aMap_log);
-					await dbbsr.remMap_byCode(job,bsr_code,"pending").then(rMap_log => {
-						job.updateProgress("[BOT][BH]" + rMap_log);
-						resolve();
+					await dbbsr.remMap_byCode(job,pQueue.rows[0].bsr_code,"pending").then(rMap_log => {
+						resolve(job.updateProgress("[BOT][BH]" + rMap_log));
 					}).catch(eMsg => {
 						resolve(job.updateProgress("[BOT][BH][C]" + eMsg));
 					});

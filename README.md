@@ -23,15 +23,19 @@ Initially developed by d4rkeagle6591 for Twitch streamer XORoseGold.
     - What Role the User Has in Twitch (Viewer,Subscriber,VIP,Moderator,Broadcaster)
 
 ## Planned Features
-    - Web Frontend Allowing Users to View Full Queue In Order with ReactJS
-    - Extension of Web Frontend for Twitch Moderators to Preform Some Actions
-    - Queue Auto-Close if Queue Length Reaches Set Time
-    - Map Auto-Removal on User Inactivity for Set Amount of Time (With Tracking for Quick Re-Add If Nessesary)
-    - Map Auto-Removal on User Inactivity When Requested Map Gets to Set Spot in Queue
-    - Command for Users to See How Long Until Their Map Is Played
-    - Command For Users to See Which Maps They Added to the Queue
-    - Automatic !mtt When User Directly Subscribes or Gifts Another User a Twitch Subscription
-    - !cbmu Command for Displaying Missing Users with Songs in Queue
+- Web Frontend Allowing Users to View Full Queue In Order with ReactJS
+- Extension of Web Frontend for Twitch Moderators to Preform Some Actions
+- Queue Auto-Close if Queue Length Reaches Set Time
+- Map Auto-Removal on User Inactivity for Set Amount of Time (With Tracking for Quick Re-Add If Nessesary)
+- Map Auto-Removal on User Inactivity When Requested Map Gets to Set Spot in Queue
+- Command for Users to See How Long Until Their Map Is Played
+- Command For Users to See Which Maps They Added to the Queue
+- Automatic !mtt When User Directly Subscribes or Gifts Another User a Twitch Subscription
+- !cbmu Command for Displaying Missing Users with Songs in Queue
+- Historical database for viewing with option to add a song back to the queue
+- !songmsg Parse and note update
+- !cbskip command to skip number of songs on top of queue
+- Added capability to !queue command for removing songs that have been at the top for a while and not played (possible workaround for streamer skipping song)
 
 ## Known Issues
     - If the streamer uses the "skip" option within Beat Saber, there is no message sent to chat by BS+.

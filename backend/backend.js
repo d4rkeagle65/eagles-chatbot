@@ -34,8 +34,10 @@ const run = async () => {
 run();
 
 async function onMessage(msg) {
-	addJob_usrQueue({ jobName:"usrUpdate", msg});
-	addJob_msgQueue({ jobName:"msgJob", msg});
+	if (msg.isSelf === false) {
+		addJob_usrQueue({ jobName:"usrUpdate", msg});
+		addJob_msgQueue({ jobName:"msgJob", msg});
+	}
 }
 
 async function onUser_join(msg) {

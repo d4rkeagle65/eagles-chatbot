@@ -2,7 +2,7 @@ As I am still learning the development process with NodeJS and NextJS I have not
 
 The things in this folder are purely for assisting in setting up the environment so that this can be deployed onto a server.
 
-You can install and build the database with the below commands:
+You can install and build the database with the below commands, obviously change [password] with a password for the ecb_user:
 ```sh
 sudo apt-get install postgresql
 sudo systemctl enable postgresql
@@ -14,7 +14,9 @@ CREATE DATABASE ecb OWNER ecb_user;
 \q
 
 sudo useradd -G users ecb_user
-sudo passwd ecb_user
+echo "ecb_user:[password]' | sudo chpasswd
+
+node setup/setup_database.js
 ```
 
 Then setup redis with the below commands:

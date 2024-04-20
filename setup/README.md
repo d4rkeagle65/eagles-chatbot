@@ -41,6 +41,21 @@ sudo systemctl enable eagles-chatbot.service
 sudo systemctl start eagles-chatbot.service
 ```
 
+Additionally I use tmux, and make a window split for watching things while the frontend is not yet ready. Below are a few of the commands I use in each of the window panes:
+```sh
+# To watch the log as things are happening in the chatbot
+sudo journalctl -fu eagles-chatbot --no-hostname | egrep -i '\[BOT\]'
+
+# To watch the userlist as people join/chat/leave
+sudo -u ecb_user watch -n 1 'psql -d ecb -c "SELECT * FROM userlist WHERE user_lastactivets IS NOT NULL ORDER BY user_lastactivets DESC"'
+
+# To watch the pending queue to make sure nothing gets stuck while working out bugs
+sudo -u ecb_user watch -n 1 'psql -d ecb -c "SELECT * FROM bsrpending ORDER BY bsr_ts ASC"'
+
+# To watch the actual queue itself
+sudo -u ecb_user watch -n 1 'psql -d ecb -c "SELECT oa,ob, oD::Numeric, bsr_code, bsr_req, bsr_req_here AS here, bsr_name, bsr_ts, bsr_length, bsr_note, sus_remap AS remap FROM bsractive ORDER BY oD ASC;"'
+```
+
 # File List
 - eagles-chatbot.service: To be placed in /lib/systemd/system/ to enable and start the systemd service for the backend.
 - setup_database.js: After the database itself is created and your .env file setup, this can be ran with node via commandline to create the tables and functions, and populate some basic values for functionality.

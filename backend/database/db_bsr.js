@@ -2,14 +2,20 @@ const path = require("path");
 const db = require(path.join(__dirname, "db.js"));
 
 // Funcions for Queue Settings
-async function getBSP_qState(job) {
+async function getBSP_qState(job, force) {
+	if (! force) { let force = false; }
 	return new Promise(async (resolve, reject) => {
-		const qState = await db.pool.query("SELECT setting_value FROM bsrsettings WHERE setting_name = 'queue_state'");
-		job.updateProgress("[BOT][DB] Queue State:[" + qState.rows[0].setting_value + "]");
-		if (qState.rows[0].setting_value === "open") {
+		if (force === true) {
+			job.updateProgress("[BOT][DB] Queue State Ignored, Forced");
 			return resolve();
 		} else {
-			return reject("BS+ Queue is Closed");
+			const qState = await db.pool.query("SELECT setting_value FROM bsrsettings WHERE setting_name = 'queue_state'");
+			job.updateProgress("[BOT][DB] Queue State:[" + qState.rows[0].setting_value + "]");
+			if (qState.rows[0].setting_value === "open") {
+				return resolve();
+			} else {
+				return reject("BS+ Queue is Closed");
+			}
 		}
 	});
 }

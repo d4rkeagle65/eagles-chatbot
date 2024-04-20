@@ -15,9 +15,11 @@ async function chatHandler(job) {
 			}
 			if (msg.tags.isModerator === true || msg.tags.badges.broadcaster === true) {
 				if (msg.message.match(/\!modadd\s/)) {
-					resolve(bs.addMap_pQueue(job, false));
+					job.updateProgress("[BOT][MP] !modadd Command Detected, Forcing if Queue Closed");
+					resolve(bs.addMap_pQueue(job, false, true));
 				} else if (msg.message.match(/\!att\s/)) {
-					resolve(bs.addMap_pQueue(job, true));
+					job.updateProgress("[BOT][MP] !att Command Detected, Forcing if Queue Closed");
+					resolve(bs.addMap_pQueue(job, true, true));
 				}
 			}
 		} else { breakPromise++; }

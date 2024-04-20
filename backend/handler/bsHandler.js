@@ -78,9 +78,10 @@ async function setBSP_queueState(job,qState) {
 }
 
 // Functions Dealing with the Pending Queue
-async function addMap_pQueue(job, bsr_att) {
+async function addMap_pQueue(job, bsr_att, force) {
+	if (! force) { let force = false; }
 	return new Promise(resolve => {
-		dbbsr.getBSP_qState(job).then(() => {
+		dbbsr.getBSP_qState(job,force).then(() => {
 			job.updateProgress("[BOT][BH] Attempting to Add Map to Pending Queue");
 			job.updateProgress("[BOT][BH] Requester Username:[" + job.data.msg.username.toLowerCase() + "]");
 			get_bsrCode(job).then((bsr_code) => {
@@ -105,6 +106,8 @@ async function remMap_pQueue_byReq(job) {
 		get_req(job,true).then(bsr_req => {
 			dbbsr.remMap_pending_byReq(job,bsr_req).then(log => {
 				resolve(job.updateProgress("[BOT][BH]" + log));
+			}).catch(eMsg => {
+				resolve(job.updateProgress("[BOT][BH][C] " + eMsg));
 			});
 		}).catch(eMsg => {
 			resolve(job.updateProgress("[BOT][BH][C] " + eMsg));

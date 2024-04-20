@@ -36,8 +36,3 @@ Initially developed by d4rkeagle6591 for Twitch streamer XORoseGold.
 - !songmsg Parse and note update
 - !cbskip command to skip number of songs on top of queue
 - Added capability to !queue command for removing songs that have been at the top for a while and not played (possible workaround for streamer skipping song)
-
-## Known Issues
-    - If the streamer uses the "skip" option within Beat Saber, there is no message sent to chat by BS+.
-        - Planning on extending the !queue self-repair to remove songs at the top of the chatbots queue that are not in the command output.
-        - Planned: Workaround !cbskip command for a Twitch mod to skip a number of maps at the top of the queue.

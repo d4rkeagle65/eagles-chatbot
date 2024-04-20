@@ -32,6 +32,18 @@ sudo systemctl start redis-server
 
 Make sure to update the .env file in the chatbot data directory with the database username, password and redis connection info. You will also need to create a twitch.tv user account for the bot, generate the correct token info and update the .env file with this as well. I generated this using https://twitchtokengenerator.com.
 
+Here are the variables needed in the .env file:
+```
+USERNAME=
+TOKEN=
+CHANNEL=
+DATABASE=ecb
+PGUSER=ecb_user
+PGPASS=
+REDDISURL=
+```
+
+
 To set up the backend systemd service, first modify the eagles-chatbot.service file for the location of chatbot data directory.
 Then run the following:
 ```sh

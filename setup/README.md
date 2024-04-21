@@ -95,5 +95,7 @@ sudo -u ecb_user watch -n 1 'psql -d ecb -c "SELECT oa,ob, oD::Numeric, bsr_code
 
 # File List
 - eagles-chatbot-backend.service: To be placed in /lib/systemd/system/ to enable and start the systemd service for the backend.
+- eagles-chatbot-frontend.service: To be placed in /lib/systemd/system/ to enable and start the systemd service for the frontend.
+- eagles-chatbot-nginx: To be placed in /etc/nginx/sites-available/ to symlink to sites-enabled for nginx.
 - setup_database.js: After the database itself is created and your .env file setup, this can be ran with node via commandline to create the tables and functions, and populate some basic values for functionality.
 

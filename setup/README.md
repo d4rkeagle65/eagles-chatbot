@@ -42,7 +42,12 @@ PGUSER=ecb_user
 PGPASS=
 REDDISURL=reddis://127.0.0.1:6379
 ```
-
+Before setting up the services, we need to compile the app:
+```sh
+cd /data/eagles-chatbot
+npm install
+npm run build
+```
 
 To set up the backend systemd service, first modify the eagles-chatbot-backend.service file for the location of chatbot data directory.
 Then run the following:
@@ -53,7 +58,7 @@ sudo systemctl enable eagles-chatbot-backend.service
 sudo systemctl start eagles-chatbot-backend.service
 ```
 To set up the frontend systemd service, first modify the eagles-chatbot-frontend.service file for the location of the chatbot data directory.
-THen run the following:
+Then run the following:
 ```sh
 sudo cp eagles-chatbot-frontend.service /lib/systemd/system/
 sudo systemctl daemon-reload

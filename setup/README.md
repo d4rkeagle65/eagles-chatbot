@@ -44,13 +44,38 @@ REDDISURL=
 ```
 
 
-To set up the backend systemd service, first modify the eagles-chatbot.service file for the location of chatbot data directory.
+To set up the backend systemd service, first modify the eagles-chatbot-backend.service file for the location of chatbot data directory.
 Then run the following:
 ```sh
 sudo cp eagles-chatbot-backend.service /lib/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable eagles-chatbot-backend.service
 sudo systemctl start eagles-chatbot-backend.service
+```
+To set up the frontend systemd service, first modify the eagles-chatbot-frontend.service file for the location of the chatbot data directory.
+THen run the following:
+```sh
+sudo cp eagles-chatbot-frontend.service /lib/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable eagles-chatbot-backend.service
+sudo systemctl start eagles-chatbot-backend.service
+```
+
+I am also using nginx for the proxy-pass of port 80 and in the future 443 to the node application.
+```sh
+# Install nginx
+sudo apt-get install nginx
+
+# Disable Default Site
+sudo rm /etc/nginx/sites-enabled/default
+
+# Copy New Site Config
+sudo cp eagles-chatbot-nginx /etc/nginx/sites-available/
+sudo ln -s /etc/nginx/sites-available/eagles-chatbot-nginx /etc/nginx/sites-enabled/eagles-chatbot-nginx
+
+# Enable and start nginx
+sudo systemctl enable nginx
+sudo systemctl start nginx
 ```
 
 Additionally I use tmux, and make a window split for watching things while the frontend is not yet ready. Below are a few of the commands I use in each of the window panes:

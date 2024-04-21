@@ -1,0 +1,13 @@
+[Unit]
+Description=eagles-chatbot-frontend nextjs
+After=network.target
+
+[Service]
+Type=simple
+User=ecb_user
+ExecStart=npm run start
+WorkingDirectory=/data/eagles-chatbot
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

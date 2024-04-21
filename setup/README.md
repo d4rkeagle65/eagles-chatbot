@@ -40,7 +40,7 @@ CHANNEL=
 DATABASE=ecb
 PGUSER=ecb_user
 PGPASS=
-REDDISURL=
+REDDISURL=reddis://127.0.0.1:6379
 ```
 
 

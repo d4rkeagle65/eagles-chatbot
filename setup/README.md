@@ -2,6 +2,15 @@ As I am still learning the development process with NodeJS and NextJS I have not
 
 The things in this folder are purely for assisting in setting up the environment so that this can be deployed onto a server.
 
+I usually use Ubuntu Server LTS, which needs a repo add for newer versions of NodeJS:
+```sh
+sudo apt update
+sudo apt upgrade
+sudo apt install -y curl
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+```
+
 You can install and build the database with the below commands, obviously change [password] with a password for the ecb_user:
 ```sh
 sudo apt-get install postgresql

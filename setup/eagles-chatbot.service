@@ -1,5 +1,5 @@
 [Unit]
-Description=eagles-chatbot-rebuild nodejs
+Description=eagles-chatbot-backend nodejs
 After=network.target
 
 [Service]

@@ -47,16 +47,16 @@ REDDISURL=
 To set up the backend systemd service, first modify the eagles-chatbot.service file for the location of chatbot data directory.
 Then run the following:
 ```sh
-sudo cp eagles-chatbot.service /lib/systemd/system/
+sudo cp eagles-chatbot-backend.service /lib/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable eagles-chatbot.service
-sudo systemctl start eagles-chatbot.service
+sudo systemctl enable eagles-chatbot-backend.service
+sudo systemctl start eagles-chatbot-backend.service
 ```
 
 Additionally I use tmux, and make a window split for watching things while the frontend is not yet ready. Below are a few of the commands I use in each of the window panes:
 ```sh
 # To watch the log as things are happening in the chatbot
-sudo journalctl -fu eagles-chatbot --no-hostname | egrep -i '\[BOT\]'
+sudo journalctl -fu eagles-chatbot-backend --no-hostname | egrep -i '\[BOT\]'
 
 # To watch the userlist as people join/chat/leave
 sudo -u ecb_user watch -n 1 'psql -d ecb -c "SELECT * FROM userlist WHERE user_lastactivets IS NOT NULL ORDER BY user_lastactivets DESC"'
@@ -69,6 +69,6 @@ sudo -u ecb_user watch -n 1 'psql -d ecb -c "SELECT oa,ob, oD::Numeric, bsr_code
 ```
 
 # File List
-- eagles-chatbot.service: To be placed in /lib/systemd/system/ to enable and start the systemd service for the backend.
+- eagles-chatbot-backend.service: To be placed in /lib/systemd/system/ to enable and start the systemd service for the backend.
 - setup_database.js: After the database itself is created and your .env file setup, this can be ran with node via commandline to create the tables and functions, and populate some basic values for functionality.
 

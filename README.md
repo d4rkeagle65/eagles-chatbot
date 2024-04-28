@@ -15,6 +15,7 @@ Initially developed by d4rkeagle6591 for Twitch streamer XORoseGold.
     - When Maps Are Added/Moved to the Top of the Queue
     - When the Queue is Opened/Closed
     - Self-Repairs Inconsistances when !queue Command is Ran (Top 10 Songs Only)
+    - Added capability to !queue command for removing songs that have been at the top for a while and not played.
     - Flags Maps For Users that Left Chat
 - **Twitch User Tracking**
     - Last Active Timestamps
@@ -34,5 +35,3 @@ Initially developed by d4rkeagle6591 for Twitch streamer XORoseGold.
 - !cbmu Command for Displaying Missing Users with Songs in Queue
 - Historical database for viewing with option to add a song back to the queue
 - !songmsg Parse and note update
-- !cbskip command to skip number of songs on top of queue
-- Added capability to !queue command for removing songs that have been at the top for a while and not played (possible workaround for streamer skipping song)

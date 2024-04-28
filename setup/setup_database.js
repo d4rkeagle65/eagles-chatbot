@@ -32,9 +32,10 @@ async function dbSetup() {
 					bsr_req_here BOOL,
 					bsr_name VARCHAR (2048),
 					bsr_ts TIMESTAMPTZ,
-					bsr_length INTERVAL,
+					bsr_length INTEGER,
 					bsr_note VARCHAR (2048),
-					sus_remap BOOL)`);
+					sus_remap BOOL,
+					sus_skip BOOL)`);
 
 		console.log("Creating bsrpending Table");
 		await db.pool.query(`CREATE TABLE bsrpending (
@@ -62,6 +63,9 @@ async function dbSetup() {
 
 		console.log("Adding queue_state Setting to bsrsettings Table");
 		await db.pool.query("INSERT INTO bsrsettings (setting_name,setting_value) VALUES('queue_state','closed')");
+
+		console.log("Adding queue_sync Setting to bsrsettings Table");
+		await db.pool.query("INSERT INTO bsrsettings (setting_name,setting_value) VALUES('queue_sync','true')");
 
 		console.log("Adding bsractive INSERT Notification");
 		await db.pool.query(`CREATE OR REPLACE FUNCTION notify_bsractive()

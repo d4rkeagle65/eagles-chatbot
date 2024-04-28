@@ -1,6 +1,12 @@
 const path = require("path");
 const bs = require(path.join(__dirname, "bsHandler.js"));
 
+let bsChatUser = process.env.BSCHATUSER;
+
+if (!bsChatUser) {
+	bsChatUser = process.env.CHANNEL;
+}
+
 async function chatHandler(job) {
 	msg = job.data.msg;
 	let breakPromise = 0;
@@ -52,7 +58,7 @@ async function chatHandler(job) {
 		} else { breakPromise++; }
 
 		// Handles Responses from BS+ User
-		if (msg.username === process.env.BSCHATUSER) {
+		if (msg.username === bsChatUser) {
 			resolve(bs.bsChatUser_responses(job));
 		} else { breakPromise++; }
 

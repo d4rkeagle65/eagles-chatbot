@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model bsractive {
+  req_id       Int       @id @default(autoincrement())
+  oa           Decimal?  @db.Decimal
+  ob           Decimal?  @db.Decimal
+  od           Decimal?  @default(dbgenerated("(oa / ob)")) @db.Decimal
+  bsr_code     String    @db.VarChar(10)
+  bsr_req      String?   @db.VarChar(25)
+  bsr_req_here Boolean?
+  bsr_name     String?   @db.VarChar(2048)
+  bsr_ts       DateTime? @db.Timestamptz(6)
+  bsr_length   Int?
+  bsr_note     String?   @db.VarChar(2048)
+  sus_remap    Boolean?
+}
+
+model bsrpending {
+  req_id   Int      @id @default(autoincrement())
+  req_att  Boolean
+  bsr_code String   @db.VarChar(10)
+  bsr_req  String?  @db.VarChar(25)
+  bsr_ts   DateTime @db.Timestamp(6)
+  bsr_note String?  @db.VarChar(2048)
+}
+
+model bsrsettings {
+  id            Int     @id @default(autoincrement())
+  setting_name  String  @db.VarChar(25)
+  setting_value String? @db.VarChar(2048)
+}
+
+model userlist {
+  id                Int       @id @default(autoincrement())
+  user_username     String    @db.VarChar(25)
+  user_type         String?   @db.VarChar(30)
+  user_joints       DateTime  @db.Timestamp(6)
+  user_lastactivets DateTime? @db.Timestamp(6)
+  user_lurk         Boolean?
+}

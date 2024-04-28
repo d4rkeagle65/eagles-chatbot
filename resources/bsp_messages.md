@@ -51,3 +51,7 @@ SendChatMessage("Queue is now closed!", null, null);
 SendChatMessage("Queue is now open!", null, null);
 ```
 
+## Output from !queue with song names
+```
+! Song queue (5 songs 18m25s), next : (bsr 1a6e5) Turbo - Homura (Eurobeat Remix), (bsr 2836b) Lord Aethelstan - Boof Pack, (bsr 3bcfe) [Chroma] Greatest Love (feat. Elle Vee) - Culture Code & SZ, (bsr 3c094) TeMPoison(Ragnarok Online), (bsr 155a7) Friday - Riton x Nightcrawlers ft. Mufasa & Hypeman (Dopamine Re-Edit)
+```

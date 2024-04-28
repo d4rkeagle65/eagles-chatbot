@@ -44,6 +44,40 @@ async function resetBSP_qItems(job,queue) {
 		});
 	});
 }
+async function getQS_syncState(job) {
+	return new Promise(async (resolve,reject) => {
+		job.updateProgress("[BOT][DB] Getting Sync State of Queue");
+		const syncState = await db.pool.query("SELECT setting_value FROM bsrsettings WHERE setting_name = 'queue_sync'");
+		if (syncState.rows[0].setting_value === "true") {
+			resolve();
+		} else {
+			reject();
+		}
+	});
+}
+async function setQS_syncState(job,sStatus) {
+	return new Promise(async (resolve) => {
+		if (sStatus === true) {
+			getQS_syncState(job).then( () => {
+				resolve("[DB] Queue is Synced with Streamers BSP");
+			}).catch( async () => {
+				await db.pool.query("UPDATE bsrsettings SET setting_value = 'true' WHERE setting_name = 'queue_sync'").then( () => {
+					resolve("[DB] Queue is Synced with Streamers BSP");
+				});
+			});
+		} else if ( sStatus === false ) {
+			getQS_syncState(job).then( async () => {
+				await db.pool.query("UPDATE bsrsettings SET setting_value = 'false' WHERE setting_name = 'queue_sync'").then( () => {
+					resolve("[DB] Queue is Desynced with Streamers BSP");
+				});
+			}).catch( () => {
+				resolve("[DB] Queue is Desynced with Streamers BSP");
+			});
+		} else {
+			resolve("[DB] ERROR: Wrong Command Syntax for setQS_syncState");
+		}
+	});
+}
 
 // Functions for Pending Queue
 async function getMap_pQueue_byReq(job,bsr_req) {
@@ -95,8 +129,8 @@ async function addMap_aQueue(job, bsr_code, bsr_req, bsr_ts, bsr_note, req_att, 
 		}
 		detMap_newPos(job,bsr_code,tgt_pos).then(async pos => {
 			job.updateProgress("[BT][BD] Adding Map to oa:[" + pos[0] + "]-ob:[" + pos[1] + "]");
-			let query = "INSERT INTO bsractive (oA, oB, bsr_code, bsr_req, bsr_req_here, bsr_ts, bsr_note, sus_remap) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)";
-			await db.pool.query(query,[ pos[0], pos[1], bsr_code, bsr_req, true, bsr_ts, bsr_note, sus_remap ]).then(() => {
+			let query = "INSERT INTO bsractive (oA, oB, bsr_code, bsr_req, bsr_req_here, bsr_ts, bsr_note, sus_remap, sus_skip) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)";
+			await db.pool.query(query,[ pos[0], pos[1], bsr_code, bsr_req, true, bsr_ts, bsr_note, sus_remap, false ]).then(() => {
 				resolve("[DB] Adding Map To Active Queue Code:[" + bsr_code + "]-Req:[" + bsr_req + "]-Note:[" + bsr_note + "]-Att:[" + req_att + "]");
 			});
 		});
@@ -197,20 +231,6 @@ async function updateMap_bsInfo(job,bsr_code,bsr_name,bsr_length) {
 		});
 	});
 }
-
-// Functions for Both Queues
-async function getMap_byCode(job,bsr_code,queue) {
-	job.updateProgress("[BOT][DB] Getting Map by Bsr Code:[" + bsr_code + "]-Queue:[" + queue + "]");
-	return new Promise(async (resolve, reject) => {
-		await db.pool.query("SELECT * FROM bsr" + queue + " WHERE bsr_code = $1", [ bsr_code ]).then(qRes => {
-			if (qRes.rowCount === 0) {
-				reject("[DB] No Map Found By Code:[" + bsr_code + "]-Queue:[" + queue + "]");
-			} else {
-				resolve(qRes);
-			}
-		});
-	});
-}
 async function getMap_byPos(job,pos,eQueue) {
 	if (! eQueue) { let eQueue = ""; }
 	job.updateProgress("[BOT][DB] Getting Map at Position:[" + pos + "]");
@@ -221,6 +241,71 @@ async function getMap_byPos(job,pos,eQueue) {
 				reject("[DB] No Map at Position:[" + pos + "]");
 			} else {
 				resolve(queue.rows[pos_req]);
+			}
+		});
+	});
+}
+async function getPos_byCode(job,bsr_code,eQueue) {
+	if (! eQueue) { let eQueue = ""; }
+	job.updateProgress("[BOT][DB] Getting Position for Map with Code:[" + bsr_code + "]");
+	return new Promise((resolve,reject) => {
+		getQueue(job,"active",eQueue).then(queue => {
+			pos = queue.rows.findIndex(x => x.bsr_code === bsr_code);
+			if (pos === -1) {
+				reject("[DB] Position Not Found for Map with Code:[" + bsr_code + "]");
+			} else {
+				resolve(pos);
+			}
+		});
+	});
+}
+async function getMaps_abovePos(job,pos,eQueue) {
+	if (! eQueue) { let eQueue = ""; }
+	job.updateProgress("[BOT][DB] Getting Maps Above Position:[" + pos + "]");
+	return new Promise(async (resolve,reject) => {
+		if (eQueue.length > 0) {
+			getMap_byPos(job,pos,eQueue).then(pMap => {
+				const mapsAbove = eQueue.map((val,index) => {
+					if (eQueue[index].od < pMap.od) {
+						return eQueue[index];
+					}
+				});
+				resolve(mapsAbove.filter(Boolean));
+			}).catch(eMsg => {
+				reject("[DB] Map Not Found in Provided Queue Object At Position:[" + pos + "]");
+			});
+		} else {
+			await db.pool.query("SELECT * FROM bsractive WHERE od < $1", [ pos ]).then(qRes => {
+				if (qRes.rowCount > 0) {
+					resolve(qRes);
+				} else {
+					reject("[DB] Nothing Above Position:[" + pos + "]");
+				}
+			}).catch(eMsg => {
+				reject("[DB] Error Getting Maps Above Position:[" + pos + "]-Error:[" + eMsg + "]");
+			});
+		}
+	});
+}
+async function updateMap_susSkip(job,bsr_code,skip) {
+	return new Promise(async (resolve,reject) => {
+		await db.pool.query("UPDATE bsractive SET sus_skip = $2 WHERE bsr_code = $1", [ bsr_code, skip ]).then(() => {
+			resolve("[DB] Updated Value of Map with Code:[" + bsr_code + "]-Skip:[" + skip + "]");
+		}).catch(eMsg => {
+			reject("[DB] Error Updating Map with Code:[" + bsr_code + "]-Skip:[" + skip + "]");
+		});
+	});
+}
+
+// Functions for Both Queues
+async function getMap_byCode(job,bsr_code,queue) {
+	job.updateProgress("[BOT][DB] Getting Map by Bsr Code:[" + bsr_code + "]-Queue:[" + queue + "]");
+	return new Promise(async (resolve, reject) => {
+		await db.pool.query("SELECT * FROM bsr" + queue + " WHERE bsr_code = $1", [ bsr_code ]).then(qRes => {
+			if (qRes.rowCount === 0) {
+				reject("[DB] No Map Found By Code:[" + bsr_code + "]-Queue:[" + queue + "]");
+			} else {
+				resolve(qRes);
 			}
 		});
 	});
@@ -242,9 +327,11 @@ async function getQueue(job,queue,eQueue) {
 		return eQueue;
 	} else {
 		job.updateProgress("[BOT][DB] Querying for Entire Queue:[" + queue + "]");
-		return new Promise(async resolve => {
+		return new Promise(async (resolve,reject) => {
 			await db.pool.query("SELECT * FROM bsr" + queue + " ORDER BY od ASC").then(nQueue => {
 				resolve(nQueue);
+			}).catch( () => {
+				reject();
 			});
 		});
 	}
@@ -276,6 +363,9 @@ async function getQueue_length(job,queue,eQueue) {
 			} else {
 				resolve(gQueue.rowCount);
 			}
+		}).catch( () => {
+			job.updateProgress("[BOT][DB] SIze of Queue:[" + queue + "]-Length:[0]");
+			resolve(0);
 		});
 	});
 }
@@ -284,6 +374,8 @@ module.exports = {
 	getBSP_qState: getBSP_qState,
 	setBSP_qState: setBSP_qState,
 	resetBSP_qItems: resetBSP_qItems,
+	getQS_syncState: getQS_syncState,
+	setQS_syncState: setQS_syncState,
 	addMap_pending: addMap_pending,
 	remMap_pending_byReq: remMap_pending_byReq,
 	addMap_aQueue: addMap_aQueue,
@@ -292,5 +384,10 @@ module.exports = {
 	getMap_byCode: getMap_byCode,
 	remMap_byCode: remMap_byCode,
 	getQueue_byUser: getQueue_byUser,
-	getMap_byPos: getMap_byPos
+	getMap_byPos: getMap_byPos,
+	getPos_byCode: getPos_byCode,
+	getMaps_abovePos: getMaps_abovePos,
+	updateMap_susSkip: updateMap_susSkip,
+	getQueue: getQueue,
+	getQueue_length: getQueue_length
 }

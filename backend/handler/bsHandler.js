@@ -157,26 +157,65 @@ async function get_codeReq_fromMsg(job) {
 		});
 	});
 }
-async function removeMap_aQueue(job) {
+async function removeMap_aQueue(job,reason) {
 	return new Promise(resolve => {
 		get_bsrCode(job).then(bsr_code => {
-			dbbsr.remMap_byCode(job,bsr_code,"active").then(sMsg => {
-				resolve(job.updateProgress("[BOT][BH]" + sMsg));
-			}).catch(eMsg => {
-				resolve(job.updateProgress("[BOT][BH]" + eMsg));
+			setMap_susSkip_aQueue(job,bsr_code,reason).then( () => {
+				dbbsr.remMap_byCode(job,bsr_code,"active").then(sMsg => {
+					resolve(job.updateProgress("[BOT][BH]" + sMsg));
+				}).catch(eMsg => {
+					resolve(job.updateProgress("[BOT][BH]" + eMsg));
+				});
 			});
 		});
+	});
+}
+async function setMap_susSkip_aQueue(job,bsr_code,reason) {
+	return new Promise(resolve => {
+		if (reason = "text") {
+			dbbsr.getQueue(job,"active").then(qRes => {
+				dbbsr.getMap_byCode(job,bsr_code,"active").then(sMsg => {
+					// Obly checking the top 10 as that is what the !queue command gives.
+					// Also makes it so that if the streamer plays a map near the bottom, it wont mark everything.
+					dbbsr.getPos_byCode(job,bsr_code,qRes).then(pos => {
+						let t10 = qRes.rows.slice(0,10);
+						let a10 = qRes.rows.slice(pos - 11,pos-1);
+						let taMatch = t10.filter(o1 => a10.some(o2 => o1.bsr_code === o2.bsr_code));
+						dbbsr.getMaps_abovePos(job,sMsg.rows[0].od,taMatch).then(async (mapsAbove) => {
+							let forCounter = 0;
+							for await (const mAbove of mapsAbove.rows) {
+								if (mAbove.sus_skip != true) {
+									forCounter++;
+									dbbsr.updateMap_susSkip(job,mAbove.bsr_code,true).then(sMsg => {
+										job.updateProgress("[BOT][BH]" + sMsg);
+									}).catch(eMsg => {
+										job.updateProgress("[BOT][BH]" + eMsg);
+									});
+								} else {
+									forCounter++;
+								}
+							}
+							if (forCounter === mapsAbove.rowCount) { resolve(); }
+						}).catch(eMsg => {
+							resolve(job.updateProgress("[BOT][BH]" + eMsg));
+						});
+					}).catch(eMsg => {
+						resolve(job.updateProgress("[BOT][BH]" + eMsg));
+					});
+				}).catch(eMsg => {
+					resolve(job.updateProgress("[BOT][BH]" + eMsg));
+				});
+			});
+		} else {
+			resolve();
+		}
 	});
 }
 async function insertMap_aQueue(job,bsr_code,tgt_pos) {
 	return new Promise(async resolve => {
 		const insMatch = job.data.msg.message.match(/^\!cbinsertmap\s(\w+)\s\@?(\w+)(\s(\d+))?(\s(\w+))?$/);
-		if (bsr_code === undefined) {
-			let bsr_code = insMatch[1];
-		}
-		if (tgt_pos === undefined) {
-			let tgt_pos = -1;
-		}
+		if (bsr_code === undefined) { let bsr_code = insMatch[1]; }
+		if (tgt_pos === undefined) { let tgt_pos = -1; }
 		let bsr_req = "";
 		let bsr_ts = new Date();
 		let bsr_note = "";
@@ -218,28 +257,62 @@ async function handle_qCommand(job) {
 	job.updateProgress("[BOT][BH] !queue Command Detected");
 	return new Promise(async resolve => {
 		let bsrList = job.data.msg.message.split(":")[1].split(",");
-
-		for await (const [key, bsr] of bsrList.entries()) {
-			job.log("[BOT][BH] Handling Key:[" + key + "]-bsr:[" + bsr + "]");
-			let req_pos = Number(key) + 1;
-			await get_bsrCode(job,bsr.trim()).then(async bsr_code => {
-				await dbbsr.getMap_byCode(job,bsr_code,"active").then( async mRes => {
-					await dbbsr.getMap_byPos(job,req_pos).then( async map_info => {
-						if ( bsr_code === map_info.bsr_code ) {
-							job.updateProgress("[BOT][DB] Correct Spot for Map:[" + bsr_code + "]-Pos:[" + req_pos + "]");
-						} else {
-							await dbbsr.moveMap_inQueue(job,bsr_code,"",req_pos);
-						}
-					}).catch( eMsg => {
+		
+		resolve(check_queueSync(job).then( async () => {
+			for await (const [key, bsr] of bsrList.entries()) {
+				job.log("[BOT][BH] Handling Key:[" + key + "]-bsr:[" + bsr + "]");
+				let req_pos = Number(key) + 1;
+				await get_bsrCode(job,bsr.trim()).then(async bsr_code => {
+					await dbbsr.getMap_byCode(job,bsr_code,"active").then( async mRes => {
+						await dbbsr.getMap_byPos(job,req_pos).then( async map_info => {
+							if ( bsr_code === map_info.bsr_code ) {
+								job.updateProgress("[BOT][DB] Correct Spot for Map:[" + bsr_code + "]-Pos:[" + req_pos + "]");
+								if (map_info.sus_skip === true) {
+									dbbsr.updateMap_susSkip(job,map_info.bsr_code,false).then(sMsg => {
+										job.updateProgress("[BOT][BH]" + sMsg);
+									}).catch(eMsg => {
+										job.updateProgress("[BOT][BH]" + eMsg);
+									});
+								}
+							} else {
+								if (map_info.sus_skip === true) {
+									job.updateProgress("[BOT][BH] Detected Skipped Map:[" + map_info.bsr_code + "]");
+									await dbbsr.remMap_byCode(job,map_info.bsr_code,"active").then(sMsg => {
+										job.updateProgress("[BOT][BH]" + sMsg);
+									}).catch(eMsg => {
+										job.updateProgress("[BOT][BH]" + eMsg);
+									});
+								}
+								await dbbsr.moveMap_inQueue(job,bsr_code,"",req_pos);
+							}
+						}).catch( eMsg => {
+							job.updateProgress("[BOT][BH]" + eMsg);
+						});
+					}).catch(async eMsg => {
 						job.updateProgress("[BOT][BH]" + eMsg);
+						await insertMap_aQueue(job,bsr_code,req_pos);
 					});
-				}).catch(async eMsg => {
-					job.updateProgress("[BOT][BH]" + eMsg);
-					await insertMap_aQueue(job,bsr_code,req_pos);
+				});
+			}
+		}));
+	});
+}
+async function check_queueSync(job) {
+	return new Promise(async resolve => {
+		let countMatch = job.data.msg.message.match(/^\!\sSong\squeue\s\((\d+)\ssongs/);
+		if (countMatch.length > 0) {
+			let songCount = countMatch[1];
+			console.log(songCount);
+			await dbbsr.getQueue_length(job,"active").then( async qLength => {
+				let qState = true;
+				if (qLength != songCount) { qState = false;  }
+				await dbbsr.setQS_syncState(job,qState).then(rMsg => {
+					resolve(job.updateProgress("[BOT][BH]" + rMsg));
 				});
 			});
+		} else {
+			resolve();
 		}
-		resolve();
 	});
 }
 
@@ -286,12 +359,8 @@ async function bsChatUser_responses(job) {
 		// BS+ Message For Song Being Next
 		if (job.data.msg.message.includes("is next")) {
 			job.updateProgress("[BOT][BH] Attempting to Remove Map from Active Queue");
-			get_bsrCode(job).then(bsr_code => {
-				dbbsr.remMap_byCode(job,bsr_code,"active").then( () => {
-					resolve();
-				}).catch(eMsg => {
-					resolve(job.updateProgress("[BOT][BH]" + eMsg));
-				});
+			removeMap_aQueue(job,"next").then( () => {
+				resolve();
 			});
 		} else { breakPromise++; }
 

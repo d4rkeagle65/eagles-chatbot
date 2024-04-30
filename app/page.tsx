@@ -1,20 +1,37 @@
-import UserTable from "@/app/ui/userlist/user-list";
+import * as React from 'react';
+import Sheet from '@mui/joy/Sheet';
+import Typography from '@mui/joy/Typography';
 
-export const dynamic = "force-dynamic";
+import UserList from '@/components/UserList/UserList/';
 
-export default async function Home() {
-	return (
-		<div className="home basis-4/6 justify-self-center">
-			<div className="home-header p-2">
-				<h3 className="text-slate-900 dark:text-white mt-5 text-base font-medium">Home Page</h3>
-				<p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">This is the home page for Eagles-Chatbot</p>
-			</div>
-			<div className="content flex flex-row">
-				<div className="queue pr-1 basis-4/5 rounded border"></div>
-				<div className="usertable pl-1 basis-1/5 rounded border">
-					<UserTable />
-				</div>
-			</div>
-		</div>
-	);
+export default function Home() {
+  return (
+    <Sheet
+      sx={{
+        display: 'flex',
+        flexFlow: 'row nowrap',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+      }}
+    >
+      <Sheet
+        sx={{
+          width: '20%',
+	  mx: 'auto',
+          my: 2,
+          py: 2,
+          px: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          borderRadius: 'sm',
+          boxShadow: 'md',
+        }}
+        variant="outlined"
+      >
+	<UserList />
+      </Sheet>
+    </Sheet>
+  );
 }

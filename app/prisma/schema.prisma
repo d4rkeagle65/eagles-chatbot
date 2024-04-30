@@ -20,6 +20,7 @@ model bsractive {
   bsr_length   Int?
   bsr_note     String?   @db.VarChar(2048)
   sus_remap    Boolean?
+  sus_skip     Boolean?
 }
 
 model bsrpending {

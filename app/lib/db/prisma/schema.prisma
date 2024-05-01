@@ -46,3 +46,4 @@ model userlist {
   user_lastactivets DateTime? @db.Timestamp(6)
   user_lurk         Boolean?
 }
+

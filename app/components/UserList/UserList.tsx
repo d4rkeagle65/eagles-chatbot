@@ -2,12 +2,15 @@
 import * as React from 'react';
 import Image from "next/image";
 
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import Table from '@mui/material/Table';
-import Chip from '@mui/material/Chip';
-import Avatar from '@mui/material/Avatar';
+import Accordion from '@mui/joy/Accordion';
+import AccordionGroup from '@mui/joy/AccordionGroup';
+import AccordionDetails from '@mui/joy/AccordionDetails';
+import AccordionSummary from '@mui/joy/AccordionSummary';
+import LinearProgress from '@mui/joy/LinearProgress';
+import Table from '@mui/joy/Table';
+import Chip from '@mui/joy/Chip';
+import Avatar from '@mui/joy/Avatar';
+import Box from '@mui/joy/Box';
 
 //import getConfig from 'next/config';
 //const { publicRuntimeConfig } = getConfig();
@@ -36,12 +39,11 @@ function UserType(props) {
 		return;
 	} else {
 		return (
-			<Avatar
+			<Image
 				src={props.badge[0].versions[0].image_url_1x}
 				alt={props.badge[0].set_id}
 				width={18}
 				height={18}
-				variant="square"
 			/>
 		);
 	}
@@ -49,7 +51,8 @@ function UserType(props) {
 
 function UserRow(props) {
 	
-	const sBadge = props.badges.map((badge) => { if (badge.set_id === props.user.user_type) { return badge }}).filter(Boolean);
+	let sBadge = props.badges.map((badge) => { if (badge.set_id === props.user.user_type) { return badge }}).filter(Boolean);
+	if (props.user.user_type === "subscriber") { sBadge = ""; }
 
 	return (
 		<React.Fragment>
@@ -70,16 +73,17 @@ function UserTable(props) {
 				hoverRow
 				noWrap
 				size="sm"
-				borderAxis="both"
+				borderAxis="xBetween"
 				variant="plain"
 				sx={{
 					m: 0,
 					p: 0,
-					"--TableCell-height": "20px",
+					"--TableCell-height": "23px",
 					"--TableCell-paddingX": "0px",
 					"--TableCell-paddingY": "0px",
 					'& tbody td:nth-child(1)': {
 						width: '10%',
+						pt: '3px',
 					},
 					'& tbody td:nth-child(2)': {
 						width: '55%',
@@ -102,19 +106,44 @@ function UserTable(props) {
 	);
 }
 
-export default function TableUsers() {
+function UserAccordion(props) {
 	const [index, setIndex] = React.useState<number | null>(0);
-	const [uloading, setULoading] = React.useState(true);
+	let userCount = Object.keys(props.users).length;
+	return (
+					<Accordion
+						expanded={index === props.index}
+						onChange={(event, expanded) => {
+							setIndex(expanded ? props.index : null);
+						}}
+					>
+						<AccordionSummary>{props.summary} ({userCount})</AccordionSummary>
+						<AccordionDetails>
+							<UserTable users={props.users} badges={props.badges} />
+						</AccordionDetails>
+					</Accordion>
+	);
+}
+
+export default function TableUsers() {
+	const [uAloading, setUALoading] = React.useState(true);
+	const [uIloading, setUILoading] = React.useState(true);
 	const [bloading, setBLoading] = React.useState(true);
-	const [users, setUsers] = React.useState(null);	
+	const [activeUsers, setAUsers] = React.useState(null);	
+	const [inactiveUsers, setIUsers] = React.useState(null);	
 	const [badges, setBadges] = React.useState(null);
 
 	React.useEffect(() => {
-		async function getUsers() {
-			const userList = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/database/getusers', { next: { revalidate: 60 } });
+		async function getAUsers() {
+			const userList = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/db/getusers/active', { next: { revalidate: 60 } });
 			const uData = await userList.json();
-			setUsers(uData);
-			setULoading(false);
+			setAUsers(uData);
+			setUALoading(false);
+		}
+		async function getIUsers() {
+			const userList = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/db/getusers/inactive', { next: { revalidate: 60 } });
+			const uData = await userList.json();
+			setIUsers(uData);
+			setUILoading(false);
 		}
 		async function getBadges() {
 			fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/twitch/getbadges', { next: { revalidate: 86400 } })
@@ -126,28 +155,38 @@ export default function TableUsers() {
 		}
 
 		getBadges();		
-		getUsers();
+		getAUsers();
+		getIUsers();
 	}, []);
 
-	if (uloading || bloading) {
-		return <p> Loading Userlist </p>;
+	if (uAloading || bloading || uIloading) {
+		return (
+			<Box
+				alignItems="center"
+				justifyContent="center"
+				display="flex" 
+				sx={{ 
+					width: '100%', 
+					mx: 'auto',
+					px: 'auto',
+					align: 'center',
+				}}
+			> 
+				<LinearProgress thickness={1} />
+			</Box>
+		);
 	}
 
-	console.log(users);
+	console.log(activeUsers);
+	console.log(inactiveUsers);
 	console.log(badges);
 	return (
 		<>
-					<Accordion
-						expanded={index === 0}
-						onChange={(event, expanded) => {
-							setIndex(expanded ? 0 : null);
-						}}
-					>
-						<AccordionSummary>Active Users</AccordionSummary>
-						<AccordionDetails>
-							<UserTable users={users} badges={badges} />
-						</AccordionDetails>
-					</Accordion>
+			<AccordionGroup>
+					<UserAccordion index={0} summary="Active Users" users={activeUsers} badges={badges} />
+					<UserAccordion index={1} summary="Inactive Users" users={inactiveUsers} badges={badges} />
+			</AccordionGroup>
 		</>
 	);
 }
+

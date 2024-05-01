@@ -172,30 +172,51 @@ async function removeMap_aQueue(job,reason) {
 }
 async function setMap_susSkip_aQueue(job,bsr_code,reason) {
 	return new Promise(resolve => {
-		if (reason = "text") {
+		if (reason === "next") {
 			dbbsr.getQueue(job,"active").then(qRes => {
 				dbbsr.getMap_byCode(job,bsr_code,"active").then(sMsg => {
 					// Obly checking the top 10 as that is what the !queue command gives.
 					// Also makes it so that if the streamer plays a map near the bottom, it wont mark everything.
 					dbbsr.getPos_byCode(job,bsr_code,qRes).then(pos => {
 						let t10 = qRes.rows.slice(0,10);
-						let a10 = qRes.rows.slice(pos - 11,pos-1);
-						let taMatch = t10.filter(o1 => a10.some(o2 => o1.bsr_code === o2.bsr_code));
-						dbbsr.getMaps_abovePos(job,sMsg.rows[0].od,taMatch).then(async (mapsAbove) => {
+						let aaPos = (pos - 11) < 0 ? 0 : pos - 11;
+						let abPos = (pos - 1) < 0 ? 0 : pos - 1;
+						let a10 = qRes.rows.slice(aaPos,abPos);
+						let objRows = t10.filter(o1 => a10.some(o2 => o1.bsr_code === o2.bsr_code));
+						let taMatch = { rows: objRows, };
+						dbbsr.getMaps_abovePos(job,pos,taMatch).then(async (mapsAbove) => {
 							let forCounter = 0;
-							for await (const mAbove of mapsAbove.rows) {
-								if (mAbove.sus_skip != true) {
-									forCounter++;
-									dbbsr.updateMap_susSkip(job,mAbove.bsr_code,true).then(sMsg => {
-										job.updateProgress("[BOT][BH]" + sMsg);
-									}).catch(eMsg => {
-										job.updateProgress("[BOT][BH]" + eMsg);
-									});
-								} else {
-									forCounter++;
+							let skippedMaps = 0;
+							if (mapsAbove.length > 0) {
+								for await (const mAbove of mapsAbove) {
+									if (mAbove.sus_skip != true) {
+										forCounter++;
+										dbbsr.updateMap_susSkip(job,mAbove.bsr_code,true).then(sMsg => {
+											job.updateProgress("[BOT][BH]" + sMsg + "-Counter:[" + forCounter + "]-Skipped:[" + skippedMaps + "]");
+											skippedMaps++;
+										}).catch(eMsg => {
+											job.updateProgress("[BOT][BH]" + eMsg + "-Counter:[" + forCounter + "]-Skipped:[" + skippedMaps + "]");
+										});
+									} else {
+										forCounter++;
+									}
 								}
 							}
-							if (forCounter === mapsAbove.rowCount) { resolve(); }
+							if (forCounter === mapsAbove.length) { 
+								dbbsr.getQueue_length(job,"active").then( qLength => {
+									if (skippedMaps === 0) {
+										resolve(job.updateProgress("[BOT][BH] No Maps Found Above Pos:[" + pos + "]")); 
+									} else {
+										if (qLength === (qRes.rows.length - skippedMaps)) {
+											dbbsr.setQS_syncState(job,true).then( () => {
+												resolve();
+											});
+										} else {
+											resolve();
+										}
+									}
+								});
+							}
 						}).catch(eMsg => {
 							resolve(job.updateProgress("[BOT][BH]" + eMsg));
 						});
@@ -297,12 +318,12 @@ async function handle_qCommand(job) {
 		}));
 	});
 }
-async function check_queueSync(job) {
+async function check_queueSync(job,corrections) {
+	if (! corrections) { let corrections = 0; }
 	return new Promise(async resolve => {
 		let countMatch = job.data.msg.message.match(/^\!\sSong\squeue\s\((\d+)\ssongs/);
 		if (countMatch.length > 0) {
-			let songCount = countMatch[1];
-			console.log(songCount);
+			let songCount = countMatch[1] - corrections;
 			await dbbsr.getQueue_length(job,"active").then( async qLength => {
 				let qState = true;
 				if (qLength != songCount) { qState = false;  }

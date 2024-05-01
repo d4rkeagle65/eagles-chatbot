@@ -238,7 +238,7 @@ async function getMap_byPos(job,pos,eQueue) {
 		getQueue(job,"active",eQueue).then(queue => {
 			let pos_req = Number(pos) - 1;
 			if (queue.rows[pos_req] === undefined) {
-				reject("[DB] No Map at Position:[" + pos + "]");
+				reject("[DB] No Map at Position:[" + pos_req + "]");
 			} else {
 				resolve(queue.rows[pos_req]);
 			}
@@ -254,7 +254,7 @@ async function getPos_byCode(job,bsr_code,eQueue) {
 			if (pos === -1) {
 				reject("[DB] Position Not Found for Map with Code:[" + bsr_code + "]");
 			} else {
-				resolve(pos);
+				resolve(Number(pos) + 1);
 			}
 		});
 	});
@@ -263,26 +263,32 @@ async function getMaps_abovePos(job,pos,eQueue) {
 	if (! eQueue) { let eQueue = ""; }
 	job.updateProgress("[BOT][DB] Getting Maps Above Position:[" + pos + "]");
 	return new Promise(async (resolve,reject) => {
-		if (eQueue.length > 0) {
-			getMap_byPos(job,pos,eQueue).then(pMap => {
-				const mapsAbove = eQueue.map((val,index) => {
-					if (eQueue[index].od < pMap.od) {
-						return eQueue[index];
+		if (eQueue.rows.length > 0) {
+			getMap_byPos(job,pos).then(pMap => {
+				const mapsAbove = eQueue.rows.map((val,index) => {
+					if (eQueue.rows[index].od < pMap.od) {
+						return eQueue.rows[index];
 					}
 				});
-				resolve(mapsAbove.filter(Boolean));
+				let mapsReturn = mapsAbove.filter(Boolean);
+				job.updateProgress("[BOT][DB] Found Maps Above Position:[" + pos + "]-Count:[" + mapsReturn.length + "]");
+				resolve(mapsReturn);
 			}).catch(eMsg => {
-				reject("[DB] Map Not Found in Provided Queue Object At Position:[" + pos + "]");
+				reject(eMsg);
 			});
 		} else {
-			await db.pool.query("SELECT * FROM bsractive WHERE od < $1", [ pos ]).then(qRes => {
-				if (qRes.rowCount > 0) {
-					resolve(qRes);
-				} else {
-					reject("[DB] Nothing Above Position:[" + pos + "]");
-				}
+			getMap_byPos(job,pos).then(async (pMap) => {
+				await db.pool.query("SELECT * FROM bsractive WHERE od < $1", [ pMap.od ]).then(qRes => {
+					if (qRes.rowCount > 0) {
+						resolve(qRes);
+					} else {
+						reject("[DB] Nothing Above Position:[" + pos + "]");
+					}
+				}).catch(eMsg => {
+					reject("[DB] Error Getting Maps Above Position:[" + pos + "]-Error:[" + eMsg + "]");
+				});
 			}).catch(eMsg => {
-				reject("[DB] Error Getting Maps Above Position:[" + pos + "]-Error:[" + eMsg + "]");
+				reject(eMsg);
 			});
 		}
 	});

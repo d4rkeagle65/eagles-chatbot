@@ -14,7 +14,7 @@ async function chatHandler(job) {
 	return new Promise(async resolve => {
 
 		// !bsr, !modadd, and !att Commands to Add Maps to Queue
-		if (msg.message.match(/^\!(bsr\s|modadd\s|att\s).*$/)) {
+		if (msg.message.match(/^\!(bsr\s|modadd\s|att\s)([a-zA-Z0-9]+)(\s.*)?$/)) {
 			if (msg.message.match(/\!bsr\s/)) {
 				job.updateProgress("[BOT][MP] !bsr Command Detected");
 				resolve(bs.addMap_pQueue(job, false));

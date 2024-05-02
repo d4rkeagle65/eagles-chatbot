@@ -33,7 +33,7 @@ function MapName(props) {
 				arrow
 				placement="bottom-start"
 			>
-				<Chip size="sm">Note</Chip>
+				<Chip size="sm" variant="solid">Note</Chip>
 			</Tooltip>
 		);
 	}
@@ -49,7 +49,17 @@ function MapCode(props) {
 	let remapChip;
 	let qHref = "https://beatsaver.com/maps/" + props.code;
 	if (props.remap) {
-		remapChip = <Chip size="sm">R</Chip>;
+		remapChip = (
+			<Tooltip
+				title="Remapped"
+				size="sm"
+				variant="solid"
+				arrow
+				placement="bottom-start"
+			>
+				<Chip size="sm" variant="soft">R</Chip>
+			</Tooltip>
+		);
 	}
 	return ( <Typography 
 			level="body-xs"
@@ -69,7 +79,17 @@ function MapCode(props) {
 
 function MapRequesterPresence(props) {
 	if (props.here === false) {
-		return( <Chip size="sm">M</Chip> );
+		return( 
+			<Tooltip
+				title="User missing from Twitch chat."
+				size="sm"
+				variant="solid"
+				arrow
+				placement="bottom-end"
+			>
+				<Chip size="sm" variant="soft" color="danger">M</Chip> 
+			</Tooltip>
+		);
 	} else { return; }
 }
 

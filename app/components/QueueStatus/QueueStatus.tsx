@@ -1,6 +1,7 @@
 'use client';
 import * as React from 'react';
 import Chip from '@mui/joy/Chip';
+import Tooltip from '@mui/joy/Tooltip';
 
 export default function QueueStatus() {
 	const [sLoading, setStatusLoading] = React.useState(true);
@@ -29,11 +30,18 @@ export default function QueueStatus() {
 		qStatus = 'Open';
 		cColor = 'neutral';
 	}
+	let ttTitle="The Queue is " + qStatus + "!";
 
 	return (
-		<>
+		<Tooltip
+			title={ttTitle}
+			size="sm"
+			variant="solid"
+			arrow
+			placement="bottom-end"
+		>
 			<Chip size="md" variant="outlined" color={cColor}>{qStatus}</Chip>
-		</>
+		</Tooltip>
 	);
 
 }

@@ -11,13 +11,21 @@ import Table from '@mui/joy/Table';
 import Chip from '@mui/joy/Chip';
 import Avatar from '@mui/joy/Avatar';
 import Box from '@mui/joy/Box';
-
-//import getConfig from 'next/config';
-//const { publicRuntimeConfig } = getConfig();
+import Tooltip from '@mui/joy/Tooltip';
 
 function UserLurk(props) {
 	if (props.lurk) {
-		return <Chip size="sm">L</Chip>;
+		return (
+			<Tooltip
+				title="User is !lurking"
+				size="sm"
+				variant="solid"
+				arrow
+				placement="bottom-end"
+			>
+				<Chip size="sm" variant="soft">L</Chip>
+			</Tooltip>
+		);
 	} else {
 		return;
 	}

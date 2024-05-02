@@ -1,6 +1,7 @@
 'use client';
 import * as React from 'react';
 import Chip from '@mui/joy/Chip';
+import Tooltip from '@mui/joy/Tooltip';
 
 export default function QueueSyncState() {
 	const [sLoading, setStateLoading] = React.useState(true);
@@ -29,11 +30,18 @@ export default function QueueSyncState() {
 		qState = 'Desynced from BS+';
 		cColor = 'danger';
 	}
-
+	let ttText = "Chatbot Queue is " + qState;
+	
 	return (
-		<>
+		<Tooltip
+			title={ttText}
+			size="sm"
+			variant="solid"
+			arrow
+			placement="bottom-end"
+		>
 			<Chip size="md" variant="outlined" color={cColor}>{qState}</Chip>
-		</>
+		</Tooltip>
 	);
 
 }

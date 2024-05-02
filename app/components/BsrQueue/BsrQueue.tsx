@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 
-import { BSRActiveQueue } from '@/lib/interfaces';
+import { BSRActiveQueue, Index } from '@/lib/interfaces';
 
 import LinearProgress from '@mui/joy/LinearProgress';
 import Table from '@mui/joy/Table';
@@ -104,7 +104,7 @@ const MapRequester = ({ bsr_req_here, bsr_req }: BSRActiveQueue) => {
 	return ( <Typography level="body-xs" endDecorator={ hereChip } > {bsr_req} </Typography> );
 }
 
-const QueueRow = (props: {aQueueRow:BSRActiveQueue, index}) => {
+const QueueRow = (props: {aQueueRow:BSRActiveQueue, index:Index}) => {
 	let qIndex = props.index + 1;
 	return (
 		<tr key={props.aQueueRow.bsr_code}>

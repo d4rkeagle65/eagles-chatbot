@@ -31,10 +31,20 @@ interface TwitchBadge {
 
 interface TwitchBadges extends Array<TwitchBadge>{}
 
+interface Index {
+	index: number;
+}
+
+interface Summary {
+	summary: string,
+}
+
 export {
 	BSRActiveQueue,
 	TwitchUser,
 	TwitchUsers,
 	TwitchBadge,
 	TwitchBadges,
+	Index,
+	Summary,
 }

@@ -2,7 +2,7 @@
 import * as React from 'react';
 import Image from "next/image";
 
-import { TwitchUser, TwitchUsers, TwitchBadge, TwitchBadges } from '@/lib/interfaces';
+import { TwitchUser, TwitchUsers, TwitchBadge, TwitchBadges, Index, Summary } from '@/lib/interfaces';
 
 import Accordion from '@mui/joy/Accordion';
 import AccordionGroup from '@mui/joy/AccordionGroup';
@@ -116,7 +116,7 @@ const UserTable = (props: {users:TwitchUsers, badges:TwitchBadges}) => {
 	);
 }
 
-const UserAccordion = (props: {users:TwitchUsers, badges:TwitchBadgesi, summary, index}) => {
+const UserAccordion = (props: {users:TwitchUsers, badges:TwitchBadgesi, summary:Summary, index:Index}) => {
 	const [index, setIndex] = React.useState<number | null>(0);
 	let userCount = Object.keys(props.users).length;
 	return (

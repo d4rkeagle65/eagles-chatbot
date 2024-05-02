@@ -22,8 +22,6 @@ export default function QueueSyncState() {
 		return;
 	}
 
-	console.log(queueState);
-
 	let qState = 'Synced with BS+';
 	let cColor = 'neutral'
 	if (queueState[0].setting_value === true) {

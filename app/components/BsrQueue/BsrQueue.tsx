@@ -1,6 +1,8 @@
 'use client';
 import * as React from 'react';
 
+import { BSRActiveQueue } from '@/lib/interfaces';
+
 import LinearProgress from '@mui/joy/LinearProgress';
 import Table from '@mui/joy/Table';
 import Chip from '@mui/joy/Chip';
@@ -11,9 +13,10 @@ import Sheet from '@mui/joy/Sheet';
 import Typography from '@mui/joy/Typography';
 import Tooltip from '@mui/joy/Tooltip';
 
-function CalcLength(props) {
+const CalcLength = ({ bsr_length }: BSRActiveQueue) => {
+	if (! bsr_length) { bsr_length = 0; }
 	let date = new Date(0);
-	date.setSeconds(props.seconds);
+	date.setSeconds(bsr_length);
 	let timeString = date.toISOString().substring(11, 19);
 	return (
 		<Typography level="body-xs">
@@ -22,12 +25,12 @@ function CalcLength(props) {
 	);
 }
 
-function MapName(props) {
+const MapName = ({ bsr_note, bsr_name }: BSRActiveQueue) => {
 	let bsrNote;
-	if (props.note) {
+	if (bsr_note) {
 		bsrNote = (
 			<Tooltip 
-				title={props.note}
+				title={bsr_note}
 				size="sm" 
 				variant="solid"
 				arrow
@@ -39,16 +42,16 @@ function MapName(props) {
 	}
 	return (
 		<Box sx={{ display: 'flex', flexBasis: '100%' }}>
-			<Typography level="body-xs" sx={{ flexGrow: 2 }}>{props.bsr_name}</Typography>
+			<Typography level="body-xs" sx={{ flexGrow: 2 }}>{bsr_name}</Typography>
 			<Box sx={{ flexShrink: 0 }}>{bsrNote}</Box>
 		</Box>
 	);
 }
 
-function MapCode(props) {
+const MapCode = ({ bsr_code, sus_remap }: BSRActiveQueue) => {
 	let remapChip;
-	let qHref = "https://beatsaver.com/maps/" + props.code;
-	if (props.remap) {
+	let qHref = "https://beatsaver.com/maps/" + bsr_code;
+	if (sus_remap) {
 		remapChip = (
 			<Tooltip
 				title="Remapped"
@@ -71,14 +74,14 @@ function MapCode(props) {
 				href={qHref}
 				target="_blank"
 			>
-				{props.code}
+				{bsr_code}
 			</Link>
 		</Typography>
 	);
 }
 
-function MapRequesterPresence(props) {
-	if (props.here === false) {
+const MapRequesterPresence = ({ bsr_req_here }: BSRActiveQueue) => {
+	if (bsr_req_here === false) {
 		return( 
 			<Tooltip
 				title="User missing from Twitch chat."
@@ -93,56 +96,25 @@ function MapRequesterPresence(props) {
 	} else { return; }
 }
 
-function MapRequester(props) {
+const MapRequester = ({ bsr_req_here, bsr_req }: BSRActiveQueue) => {
 	let hereChip;
-	if (props.here === false) {
+	if (bsr_req_here === false) {
 		hereChip = <Chip size="sm">M</Chip>;
 	}
-	return ( <Typography level="body-xs" endDecorator={ hereChip } > {props.user} </Typography> );
+	return ( <Typography level="body-xs" endDecorator={ hereChip } > {bsr_req} </Typography> );
 }
 
-function QueueRow(props) {
+const QueueRow = (props: {aQueueRow:BSRActiveQueue, index}) => {
 	let qIndex = props.index + 1;
 	return (
-		<tr key={props.qMap.bsr_code}>
+		<tr key={props.aQueueRow.bsr_code}>
 			<td style={{ textAligh: 'right' }}><Typography level="body-xs">{qIndex}</Typography></td>
-			<td><MapName bsr_name={props.qMap.bsr_name} note={props.qMap.bsr_note} /></td>
-			<td><MapCode code={props.qMap.bsr_code} remap={props.qMap.sus_remap} /></td>
-			<td><MapRequester user={props.qMap.bsr_req} here={props.qMap.bsr_req_here} /></td>
-			<td><CalcLength seconds={props.qMap.bsr_length} /></td>
+			<td><MapName bsr_name={props.aQueueRow.bsr_name} bsr_note={props.aQueueRow.bsr_note} /></td>
+			<td><MapCode bsr_code={props.aQueueRow.bsr_code} sus_remap={props.aQueueRow.sus_remap} /></td>
+			<td><MapRequester bsr_req={props.aQueueRow.bsr_req} bsr_req_here={props.aQueueRow.bsr_req_here} /></td>
+			<td><CalcLength bsr_length={props.aQueueRow.bsr_length} /></td>
 			<td></td>
 		</tr>
-	);
-}
-
-function QueueTable(props) {
-	let qOrder = 0;
-	return (
-		<Table 
-			size="sm" 
-			stripe="odd" 
-			hoverRow
-			sx={{
-				captionSide: 'top',
-				'& tbody': { bgcolor: 'background.surface' },
-			}}
-		>
-			<thead>
-				<tr>
-					<th style={{ width: '3em' }}></th>
-					<th style={{ width: '100%' }}>Map Name</th>
-					<th style={{ width: '7em' }}>Code</th>
-					<th style={{ width: '25%' }}>Requester</th>
-					<th style={{ width: '6em' }}>Length</th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>
-				{props.maps.map((row, index) => (
-					<QueueRow qMap={row} index={index} />
-				))}
-			</tbody>
-		</Table>
 	);
 }
 
@@ -181,7 +153,31 @@ export default function BsrQueueTable() {
 
 	return (
 		<>
-			<QueueTable maps={activeQueue} />
+			<Table 
+				size="sm" 
+				stripe="odd" 
+				hoverRow
+				sx={{
+					captionSide: 'top',
+					'& tbody': { bgcolor: 'background.surface' },
+				}}
+			>
+				<thead>
+					<tr>
+						<th style={{ width: '3em' }}></th>
+						<th style={{ width: '100%' }}>Map Name</th>
+						<th style={{ width: '7em' }}>Code</th>
+						<th style={{ width: '25%' }}>Requester</th>
+						<th style={{ width: '6em' }}>Length</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					{activeQueue.map((row, index) => (
+						<QueueRow aQueueRow={row} index={index} key={index} />
+					))}
+				</tbody>
+			</Table>
 		</>
 	);
 }

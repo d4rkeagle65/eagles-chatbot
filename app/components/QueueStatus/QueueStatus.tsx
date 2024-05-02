@@ -22,8 +22,6 @@ export default function QueueStatus() {
 		return;
 	}
 
-	console.log(queueStatus);
-
 	let qStatus = 'Closed';
 	let cColor = 'danger'
 	if (queueStatus[0].setting_value === 'Open') {

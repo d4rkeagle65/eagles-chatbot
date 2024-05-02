@@ -2,6 +2,8 @@
 import * as React from 'react';
 import Image from "next/image";
 
+import { TwitchUser, TwitchUsers, TwitchBadge, TwitchBadges } from '@/lib/interfaces';
+
 import Accordion from '@mui/joy/Accordion';
 import AccordionGroup from '@mui/joy/AccordionGroup';
 import AccordionDetails from '@mui/joy/AccordionDetails';
@@ -13,8 +15,8 @@ import Avatar from '@mui/joy/Avatar';
 import Box from '@mui/joy/Box';
 import Tooltip from '@mui/joy/Tooltip';
 
-function UserLurk(props) {
-	if (props.lurk) {
+const UserLurk = ({ user_lurk }: TwitchUser) => {
+	if (user_lurk) {
 		return (
 			<Tooltip
 				title="User is !lurking"
@@ -31,9 +33,9 @@ function UserLurk(props) {
 	}
 }
 
-function UserLastActivity(props) {
-	if (props.timestamp) {
-		let tStamp = new Date(props.timestamp).toLocaleTimeString("en-US", { timeZone: "UTC" });
+const UserLastActivity = ({ user_lastactivets }: TwitchUser) => {
+	if (user_lastactivets) {
+		let tStamp = new Date(user_lastactivets).toLocaleTimeString("en-US", { timeZone: "UTC" });
 		return (
 			<>{tStamp}</>
 		);
@@ -42,14 +44,14 @@ function UserLastActivity(props) {
 	}
 }
 
-function UserType(props) {
-	if (typeof props.badge[0] === "undefined") {
+const UserType = (props: {badge:TwitchBadge}) => {
+	if (props.badge.length <= 0) {
 		return;
 	} else {
 		return (
 			<Image
-				src={props.badge[0].versions[0].image_url_1x}
-				alt={props.badge[0].set_id}
+				src={props.badge[0].badge_url}
+				alt={props.badge[0].badge_id}
 				width={18}
 				height={18}
 			/>
@@ -57,24 +59,24 @@ function UserType(props) {
 	}
 }
 
-function UserRow(props) {
-	
-	let sBadge = props.badges.map((badge) => { if (badge.set_id === props.user.user_type) { return badge }}).filter(Boolean);
+const UserRow = (props: {user:TwitchUser, badges:TwitchBadges}) => {
+	let sBadge = props.badges.map((badge) => { if (badge.badge_id === props.user.user_type) { return badge }}).filter(Boolean);	
+
 	if (props.user.user_type === "subscriber") { sBadge = ""; }
 
 	return (
 		<React.Fragment>
-			<tr key={props.user.id} sx={{ m: 0, p: 0 }}>
+			<tr key={props.user.user_username} sx={{ m: 0, p: 0 }}>
 				<td sx={{ m: 0,p: 0 }}><UserType badge={sBadge} /></td>
 				<td>{props.user.user_username}</td>
-				<td><UserLurk lurk={props.user.user_lurk} /></td>
-				<td><UserLastActivity timestamp={props.user.user_lastactivets} /></td>
+				<td><UserLurk user_lurk={props.user.user_lurk} /></td>
+				<td><UserLastActivity user_lastactivets={props.user.user_lastactivets} /></td>
 			</tr>
 		</React.Fragment>
 	);
 }
 
-function UserTable(props) {
+const UserTable = (props: {users:TwitchUsers, badges:TwitchBadges}) => {
 	return (
 		<React.Fragment>
 			<Table
@@ -114,21 +116,21 @@ function UserTable(props) {
 	);
 }
 
-function UserAccordion(props) {
+const UserAccordion = (props: {users:TwitchUsers, badges:TwitchBadgesi, summary, index}) => {
 	const [index, setIndex] = React.useState<number | null>(0);
 	let userCount = Object.keys(props.users).length;
 	return (
-					<Accordion
-						expanded={index === props.index}
-						onChange={(event, expanded) => {
-							setIndex(expanded ? props.index : null);
-						}}
-					>
-						<AccordionSummary>{props.summary} ({userCount})</AccordionSummary>
-						<AccordionDetails>
-							<UserTable users={props.users} badges={props.badges} />
-						</AccordionDetails>
-					</Accordion>
+		<Accordion
+			expanded={index === props.index}
+			onChange={(event, expanded) => {
+				setIndex(expanded ? props.index : null);
+			}}
+		>
+			<AccordionSummary>{props.summary} ({userCount})</AccordionSummary>
+			<AccordionDetails>
+				<UserTable users={props.users} badges={props.badges} />
+			</AccordionDetails>
+		</Accordion>
 	);
 }
 
@@ -157,7 +159,23 @@ export default function TableUsers() {
 			fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/twitch/getbadges', { next: { revalidate: 86400 } })
 				.then(readableStreamData => readableStreamData.json())
 				.then(json => {
-					setBadges(json);
+					const tBadges = [	
+						'moderator',
+						'vip',
+						'broadcaster',
+					];
+					let sBadge = json.map((badge) => { 
+						const bMatch = tBadges.filter(str => badge.set_id.includes(str));
+						if (bMatch.length > 0) { 
+							let nBadge = {
+								badge_id: badge.set_id,
+								badge_url: badge.versions[0].image_url_1x,
+							}
+							return nBadge;
+						}
+					}).filter(Boolean);
+
+					setBadges(sBadge);
 					setBLoading(false);
 				});
 		}
@@ -185,9 +203,6 @@ export default function TableUsers() {
 		);
 	}
 
-	console.log(activeUsers);
-	console.log(inactiveUsers);
-	console.log(badges);
 	return (
 		<>
 			<AccordionGroup>

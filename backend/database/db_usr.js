@@ -2,6 +2,17 @@ const path = require("path");
 const db = require(path.join(__dirname, "db.js"));
 const dbbsr = require(path.join(__dirname, "db_bsr.js"));
 
+// Clears the UserList Table
+async function reset_userList(job) {
+	return new Promise(async resolve => {
+		await db.pool.query("DELETE FROM UserList").then( () => {
+			resolve(job.updateProgress("[BOT][DBU] Reset UserList"));
+		}).catch(eMsg => {
+			resolve(job.updateProgress("[BOT][DBU] Failed to Reset UserList Error:[" + eMsg + "]"));
+		});
+	});
+}
+
 // Gets the User in the Userlist Table
 async function getUser(job,username) {
 	return new Promise(async (resolve,reject) => {
@@ -145,6 +156,7 @@ async function lurkUser(job,username) {
 }
 
 module.exports = {
+	reset_userList: reset_userList,
 	getUser: getUser,
 	joinUser: joinUser,
 	partUser: partUser,

@@ -16,7 +16,7 @@ export default function Home() {
 				<Grid xs={16}>
 					<Sheet variant="soft" sx={{ pt: 1, borderRadius: 'sm', my: 2, ml: 2}}>
 						<Box sx={{ display: 'flex', flexBasis: '100%', mx: 2 }}>
-							<Typography level="h4" fontSize="x2" sx={{ flexGrow: 2 }}>BS+ Queue</Typography>
+							<Typography level="h4" fontSize="x2" sx={{ flexGrow: 2 }}>{process.env.NEXT_PUBLIC_TWITCH_CHANNEL}'s BS+ Queue</Typography>
 							<Box sx={{ flexShrink: 0 }}>
 								<QueueStatus />
 								<QueueSyncState />

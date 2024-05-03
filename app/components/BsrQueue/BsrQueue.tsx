@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 
-import { BSRActiveQueue, Index } from '@/lib/interfaces';
+import { BSRActiveQueue, IndexNum } from '@/lib/interfaces';
 
 import LinearProgress from '@mui/joy/LinearProgress';
 import Table from '@mui/joy/Table';
@@ -12,6 +12,11 @@ import Link from '@mui/joy/Link';
 import Sheet from '@mui/joy/Sheet';
 import Typography from '@mui/joy/Typography';
 import Tooltip from '@mui/joy/Tooltip';
+
+interface QueueRowArgs {
+	aQueueRow: BSRActiveQueue;
+	index: number;
+}
 
 const CalcLength = ({ bsr_length }: BSRActiveQueue) => {
 	if (! bsr_length) { bsr_length = 0; }
@@ -104,15 +109,15 @@ const MapRequester = ({ bsr_req_here, bsr_req }: BSRActiveQueue) => {
 	return ( <Typography level="body-xs" endDecorator={ hereChip } > {bsr_req} </Typography> );
 }
 
-const QueueRow = (props: {aQueueRow:BSRActiveQueue, index:Index}) => {
-	let qIndex = props.index + 1;
+const QueueRow = ({ aQueueRow, index }: QueueRowArgs) => {
+	const qIndex = Number(index) + 1;
 	return (
-		<tr key={props.aQueueRow.bsr_code}>
-			<td style={{ textAligh: 'right' }}><Typography level="body-xs">{qIndex}</Typography></td>
-			<td><MapName bsr_name={props.aQueueRow.bsr_name} bsr_note={props.aQueueRow.bsr_note} /></td>
-			<td><MapCode bsr_code={props.aQueueRow.bsr_code} sus_remap={props.aQueueRow.sus_remap} /></td>
-			<td><MapRequester bsr_req={props.aQueueRow.bsr_req} bsr_req_here={props.aQueueRow.bsr_req_here} /></td>
-			<td><CalcLength bsr_length={props.aQueueRow.bsr_length} /></td>
+		<tr key={aQueueRow.bsr_code}>
+			<td style={{ textAlign: 'right' }}><Typography level="body-xs">{qIndex}</Typography></td>
+			<td><MapName bsr_name={aQueueRow.bsr_name} bsr_note={aQueueRow.bsr_note} /></td>
+			<td><MapCode bsr_code={aQueueRow.bsr_code} sus_remap={aQueueRow.sus_remap} /></td>
+			<td><MapRequester bsr_req={aQueueRow.bsr_req} bsr_req_here={aQueueRow.bsr_req_here} /></td>
+			<td><CalcLength bsr_length={aQueueRow.bsr_length} /></td>
 			<td></td>
 		</tr>
 	);
@@ -151,6 +156,7 @@ export default function BsrQueueTable() {
 		);
 	}
 
+
 	return (
 		<>
 			<Table 
@@ -173,8 +179,8 @@ export default function BsrQueueTable() {
 					</tr>
 				</thead>
 				<tbody>
-					{activeQueue.map((row, index) => (
-						<QueueRow aQueueRow={row} index={index} key={index} />
+					{Object.values(activeQueue).map((row, index) => (
+						<QueueRow aQueueRow={row} index={index} />
 					))}
 				</tbody>
 			</Table>

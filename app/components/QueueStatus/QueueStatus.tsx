@@ -1,5 +1,7 @@
 'use client';
 import * as React from 'react';
+
+import { ColorPaletteProp } from '@mui/joy/styles';
 import Chip from '@mui/joy/Chip';
 import Tooltip from '@mui/joy/Tooltip';
 
@@ -24,7 +26,7 @@ export default function QueueStatus() {
 
 	let qStatus = 'Closed';
 	let cColor = 'danger'
-	if (queueStatus[0].setting_value === 'Open') {
+	if (Object.values(queueStatus)[0].setting_value === 'Open') {
 		qStatus = 'Open';
 		cColor = 'neutral';
 	}
@@ -38,7 +40,18 @@ export default function QueueStatus() {
 			arrow
 			placement="bottom-end"
 		>
-			<Chip size="md" variant="outlined" color={cColor}>{qStatus}</Chip>
+			<Chip 
+				size="md" 
+				variant="outlined" 
+				color={
+					{
+						Closed: 'danger',
+						Open: 'neutral',
+					}[qStatus] as ColorPaletteProp
+				}
+			>
+				{qStatus}
+			</Chip>
 		</Tooltip>
 	);
 

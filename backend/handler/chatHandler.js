@@ -1,5 +1,6 @@
 const path = require("path");
 const bs = require(path.join(__dirname, "bsHandler.js"));
+const dbusr = require(path.join(__dirname, "..", "database", "db_usr.js"));
 
 let bsChatUser = process.env.BSCHATUSER;
 
@@ -36,6 +37,10 @@ async function chatHandler(job) {
 			// Command to Reset Pending and Active Queues
 			if (msg.message.includes("!cbresetqueue")) {
 				resolve(bs.resetBSP_queues(job));
+
+			// Command to Reset User Queue
+			} else if (msg.message.includes("!cbresetuser")) {
+				resolve(dbusr.reset_userList(job));
 
 			// !cbremove [BSR Code]
 			} else if (msg.message.includes("!cbremove")) {

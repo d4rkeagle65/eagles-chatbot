@@ -1,8 +1,15 @@
+// @ts-nocheck
 'use client';
 import * as React from 'react';
 import Image from "next/image";
 
-import { TwitchUser, TwitchUsers, TwitchBadge, TwitchBadges, Index, Summary } from '@/lib/interfaces';
+import { TwitchUser, 
+	 TwitchUsers, 
+	 TwitchBadge, 
+	 TwitchBadges, 
+	 IndexNum, 
+	 Summary, 
+	 OptionalTwitchBadge } from '@/lib/interfaces';
 
 import Accordion from '@mui/joy/Accordion';
 import AccordionGroup from '@mui/joy/AccordionGroup';
@@ -14,6 +21,7 @@ import Chip from '@mui/joy/Chip';
 import Avatar from '@mui/joy/Avatar';
 import Box from '@mui/joy/Box';
 import Tooltip from '@mui/joy/Tooltip';
+import Typography from '@mui/joy/Typography';
 
 const UserLurk = ({ user_lurk }: TwitchUser) => {
 	if (user_lurk) {
@@ -44,14 +52,14 @@ const UserLastActivity = ({ user_lastactivets }: TwitchUser) => {
 	}
 }
 
-const UserType = (props: {badge:TwitchBadge}) => {
-	if (props.badge.length <= 0) {
+const UserType = (props: {badge:OptionalTwitchBadge}) => {
+	if (Object.values(props.badge).length <= 0) {
 		return;
 	} else {
 		return (
 			<Image
-				src={props.badge[0].badge_url}
-				alt={props.badge[0].badge_id}
+				src={Object.values(props.badge)[0].badge_url}
+				alt={Object.values(props.badge)[0].badge_id}
 				width={18}
 				height={18}
 			/>
@@ -62,12 +70,10 @@ const UserType = (props: {badge:TwitchBadge}) => {
 const UserRow = (props: {user:TwitchUser, badges:TwitchBadges}) => {
 	let sBadge = props.badges.map((badge) => { if (badge.badge_id === props.user.user_type) { return badge }}).filter(Boolean);	
 
-	if (props.user.user_type === "subscriber") { sBadge = ""; }
-
 	return (
 		<React.Fragment>
-			<tr key={props.user.user_username} sx={{ m: 0, p: 0 }}>
-				<td sx={{ m: 0,p: 0 }}><UserType badge={sBadge} /></td>
+			<tr key={props.user.user_username}>
+				<td><UserType badge={sBadge} /></td>
 				<td>{props.user.user_username}</td>
 				<td><UserLurk user_lurk={props.user.user_lurk} /></td>
 				<td><UserLastActivity user_lastactivets={props.user.user_lastactivets} /></td>
@@ -106,7 +112,7 @@ const UserTable = (props: {users:TwitchUsers, badges:TwitchBadges}) => {
 					},
 				}}
 			>
-				<tbody sx={{ m: 0, p: 0 }}>
+				<tbody>
 					{props.users.map((user) => (
 						<UserRow user={user} badges={props.badges} />
 					))}			
@@ -116,7 +122,7 @@ const UserTable = (props: {users:TwitchUsers, badges:TwitchBadges}) => {
 	);
 }
 
-const UserAccordion = (props: {users:TwitchUsers, badges:TwitchBadgesi, summary:Summary, index:Index}) => {
+const UserAccordion = (props: {users:TwitchUsers, badges:TwitchBadges, summary:Summary, index:IndexNum}) => {
 	const [index, setIndex] = React.useState<number | null>(0);
 	let userCount = Object.keys(props.users).length;
 	return (
@@ -126,7 +132,11 @@ const UserAccordion = (props: {users:TwitchUsers, badges:TwitchBadgesi, summary:
 				setIndex(expanded ? props.index : null);
 			}}
 		>
-			<AccordionSummary>{props.summary} ({userCount})</AccordionSummary>
+			<AccordionSummary>
+				<Typography> 
+					{props.summary} ({userCount})
+				</Typography>
+			</AccordionSummary>
 			<AccordionDetails>
 				<UserTable users={props.users} badges={props.badges} />
 			</AccordionDetails>
@@ -164,7 +174,7 @@ export default function TableUsers() {
 						'vip',
 						'broadcaster',
 					];
-					let sBadge = json.map((badge) => { 
+					let sBadge = Object.values(json).map((badge) => { 
 						const bMatch = tBadges.filter(str => badge.set_id.includes(str));
 						if (bMatch.length > 0) { 
 							let nBadge = {

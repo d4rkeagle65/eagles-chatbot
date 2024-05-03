@@ -1,5 +1,7 @@
 'use client';
 import * as React from 'react';
+
+import { ColorPaletteProp } from '@mui/joy/styles';
 import Chip from '@mui/joy/Chip';
 import Tooltip from '@mui/joy/Tooltip';
 
@@ -24,7 +26,7 @@ export default function QueueSyncState() {
 
 	let qState = 'Synced with BS+';
 	let cColor = 'neutral'
-	if (queueState[0].setting_value === true) {
+	if (Object.values(queueState)[0].setting_value === true) {
 		qState = 'Desynced from BS+';
 		cColor = 'danger';
 	}
@@ -38,7 +40,18 @@ export default function QueueSyncState() {
 			arrow
 			placement="bottom-end"
 		>
-			<Chip size="md" variant="outlined" color={cColor}>{qState}</Chip>
+			<Chip 
+				size="md" 
+				variant="outlined" 
+				color={
+					{
+						'Synced with BS+': 'neutral',
+						'Desynced from BS+': 'danger',
+					}[qState] as ColorPaletteProp
+				}
+			>
+				{qState}
+			</Chip>
 		</Tooltip>
 	);
 

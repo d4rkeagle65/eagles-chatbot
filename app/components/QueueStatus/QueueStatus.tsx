@@ -24,7 +24,6 @@ export default function QueueStatus() {
 		return;
 	}
 	
-	console.log(queueStatus);
 	let qStatus = queueStatus.setting_value.charAt(0).toUpperCase() + queueStatus.setting_value.substring(1);
 	let cColor = 'danger'
 	if (qStatus === 'open') {

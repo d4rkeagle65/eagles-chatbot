@@ -13,7 +13,7 @@ export default function QueueStatus() {
 		async function getQueueStatus() {
 			const statusData = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/db/getqueuestatus', { next: { revalidate: 60 } });
 			const sData = await statusData.json();
-			setQueueStatus(sData);
+			setQueueStatus(sData[0]);
 			setStatusLoading(false);
 		}
 	
@@ -23,11 +23,11 @@ export default function QueueStatus() {
 	if (sLoading) {
 		return;
 	}
-
-	let qStatus = 'Closed';
+	
+	console.log(queueStatus);
+	let qStatus = queueStatus.setting_value.charAt(0).toUpperCase() + queueStatus.setting_value.substring(1);
 	let cColor = 'danger'
-	if (Object.values(queueStatus)[0].setting_value === 'Open') {
-		qStatus = 'Open';
+	if (qStatus === 'open') {
 		cColor = 'neutral';
 	}
 	let ttTitle="The Queue is " + qStatus + "!";

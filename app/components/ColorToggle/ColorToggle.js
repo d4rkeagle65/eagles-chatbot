@@ -28,6 +28,10 @@ export default function ColorSchemeToggle() {
         }
       }}
       sx={{
+	position: 'fixed',
+	zIndex: 999,
+	bottom: '1rem',
+	right: '1rem',
         borderRadius: '50%',
         boxShadow: 'sm',
       }}

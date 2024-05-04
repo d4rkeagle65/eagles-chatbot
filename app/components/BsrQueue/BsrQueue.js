@@ -9,6 +9,8 @@ import Link from "@mui/joy/Link"
 import Typography from "@mui/joy/Typography"
 import Tooltip from "@mui/joy/Tooltip"
 
+export const dynamic = 'force-dynamic'
+
 const CalcLength = ({ bsr_length }) => {
   if (!bsr_length) {
     bsr_length = 0

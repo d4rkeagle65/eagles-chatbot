@@ -13,6 +13,8 @@ import Box from "@mui/joy/Box"
 import Tooltip from "@mui/joy/Tooltip"
 import Typography from "@mui/joy/Typography"
 
+export const dynamic = 'force-dynamic'
+
 const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
 
 const UserLurk = ({ user_lurk }) => {

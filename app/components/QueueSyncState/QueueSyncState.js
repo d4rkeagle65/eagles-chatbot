@@ -4,6 +4,8 @@ import * as React from "react"
 import Chip from "@mui/joy/Chip"
 import Tooltip from "@mui/joy/Tooltip"
 
+export const dynamic = 'force-dynamic'
+
 export default function QueueSyncState() {
   const [sLoading, setStateLoading] = React.useState(true)
   const [queueState, setQueueState] = React.useState(true)

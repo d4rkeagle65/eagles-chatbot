@@ -6,6 +6,7 @@
     "@emotion/styled": "^11.11.5",
     "@fontsource/inter": "^5.0.18",
     "@fontsource/roboto": "^5.0.13",
+    "@mui/icons-material": "^5.15.16",
     "@mui/joy": "^5.0.0-beta.36",
     "@prisma/client": "^5.13.0",
     "autoprefixer": "^10.4.19",

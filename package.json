@@ -8,7 +8,6 @@
     "@fontsource/roboto": "^5.0.13",
     "@mui/joy": "^5.0.0-beta.36",
     "@prisma/client": "^5.13.0",
-    "@vercel/postgres": "^0.8.0",
     "autoprefixer": "^10.4.19",
     "axios": "^1.6.8",
     "bullmq": "^5.7.1",
@@ -33,6 +32,7 @@
     "lint": "next lint"
   },
   "devDependencies": {
+    "@types/node": "20.12.8",
     "@types/react": "18.2.79",
     "typescript": "5.4.5"
   }

@@ -7,13 +7,13 @@ import Tooltip from '@mui/joy/Tooltip';
 
 export default function QueueStatus() {
 	const [sLoading, setStatusLoading] = React.useState(true);
-	const [queueStatus, setQueueStatus] = React.useState(true);
+	const [queueStatus, setQueueStatus] = React.useState<{value: string;}>({ value: '', });
 
 	React.useEffect(() => {
 		async function getQueueStatus() {
 			const statusData = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/db/getqueuestatus', { next: { revalidate: 60 } });
 			const sData = await statusData.json();
-			setQueueStatus(sData[0]);
+			setQueueStatus({ value: sData[0].setting_value });
 			setStatusLoading(false);
 		}
 	
@@ -24,7 +24,7 @@ export default function QueueStatus() {
 		return;
 	}
 	
-	let qStatus = queueStatus.setting_value.charAt(0).toUpperCase() + queueStatus.setting_value.substring(1);
+	let qStatus = queueStatus.value.charAt(0).toUpperCase() + queueStatus.value.substring(1);
 	let cColor = 'danger'
 	if (qStatus === 'open') {
 		cColor = 'neutral';

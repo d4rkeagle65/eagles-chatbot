@@ -27,22 +27,14 @@ interface TwitchUser {
 interface TwitchUsers extends Array<TwitchUser>{}
 
 interface TwitchBadge {
-	badge_id?: string;
-	badge_url?: string;
-}
-
-interface OptionalTwitchBadge {
-	badge?: TwitchBadge | {}
+	badge_id: string;
+	badge_url: string;
 }
 
 interface TwitchBadges extends Array<TwitchBadge>{}
 
-interface IndexNum {
-	index: number;
-}
-
 interface Summary {
-	summary: string,
+	value: string,
 }
 
 export {

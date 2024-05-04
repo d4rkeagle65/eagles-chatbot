@@ -8,6 +8,7 @@ import UserList from "@/components/UserList/UserList"
 import BsrQueue from "@/components/BsrQueue/BsrQueue"
 import QueueStatus from "@/components/QueueStatus/QueueStatus"
 import QueueSyncState from "@/components/QueueSyncState/QueueSyncState"
+import ColorToggle from "@/components/ColorToggle/ColorToggle"
 
 export const dynamic = 'force-dynamic'
 
@@ -32,6 +33,7 @@ export default function Home() {
               <Box sx={{ flexShrink: 0 }}>
                 <QueueStatus />
                 <QueueSyncState />
+	      	<ColorToggle />
               </Box>
             </Box>
             <BsrQueue />

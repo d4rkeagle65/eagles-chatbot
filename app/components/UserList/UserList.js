@@ -13,6 +13,8 @@ import Box from "@mui/joy/Box"
 import Tooltip from "@mui/joy/Tooltip"
 import Typography from "@mui/joy/Typography"
 
+const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
+
 const UserLurk = ({ user_lurk }) => {
   if (user_lurk) {
     return (
@@ -36,7 +38,7 @@ const UserLurk = ({ user_lurk }) => {
 const UserLastActivity = ({ user_lastactivets }) => {
   if (user_lastactivets) {
     let tStamp = new Date(user_lastactivets).toLocaleTimeString("en-US", {
-      timeZone: "UTC"
+      timeZone: timeZone
     })
     return <>{tStamp}</>
   } else {

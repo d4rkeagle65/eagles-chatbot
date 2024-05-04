@@ -9,6 +9,8 @@ import BsrQueue from "@/components/BsrQueue/BsrQueue"
 import QueueStatus from "@/components/QueueStatus/QueueStatus"
 import QueueSyncState from "@/components/QueueSyncState/QueueSyncState"
 
+import const dynamic = 'force-dynamic'
+
 export default function Home() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>

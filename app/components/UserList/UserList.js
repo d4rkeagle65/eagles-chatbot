@@ -173,7 +173,7 @@ export default function TableUsers() {
     async function getAUsers() {
       const userList = await fetch(
         process.env.NEXT_PUBLIC_BASE_URL + "/api/db/getusers/active",
-        { next: { revalidate: 60 } }
+        { next: { cache: 'no-store' } }
       )
       const uData = await userList.json()
       setAUsers(uData)
@@ -182,7 +182,7 @@ export default function TableUsers() {
     async function getIUsers() {
       const userList = await fetch(
         process.env.NEXT_PUBLIC_BASE_URL + "/api/db/getusers/inactive",
-        { next: { revalidate: 60 } }
+        { next: { cache: 'no-store' } }
       )
       const uData = await userList.json()
       setIUsers(uData)

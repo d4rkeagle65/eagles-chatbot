@@ -146,7 +146,7 @@ export default function BsrQueueTable() {
     async function getQueue() {
       const queueData = await fetch(
         process.env.NEXT_PUBLIC_BASE_URL + "/api/db/getqueue",
-        { next: { revalidate: 60 } }
+        { next: { cache: 'no-store' } }
       )
       const qData = await queueData.json()
       setAQueue(qData)

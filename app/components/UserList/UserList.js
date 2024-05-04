@@ -60,13 +60,10 @@ const UserType = props => {
 }
 
 const UserRow = props => {
-  let sBadge = props.badges
-    .map(badge => {
+  let sBadge = props.badges.map(badge => {
       if (badge.badge_id === props.user.user_type) {
         return badge
-      }
-    })
-    .filter(Boolean)
+      }}).filter(Boolean)
 
   let nBadge = {
     badge_url: "none",
@@ -139,12 +136,18 @@ const UserTable = props => {
 }
 
 const UserAccordion = props => {
+  const [index, setIndex] = React.useState(0);
   let userCount = Object.keys(props.users).length
   return (
-    <Accordion expanded={props.summary.value === "Active"}>
+    <Accordion 
+	  expanded={index === props.index}
+	  onChange={(event, expanded) => {
+ 	    setIndex(expanded ? props.index : null);
+	  }}
+    >
       <AccordionSummary>
         <Typography>
-          {props.summary.value} Users ({userCount})
+          {props.summary} Users ({userCount})
         </Typography>
       </AccordionSummary>
       <AccordionDetails>
@@ -232,12 +235,8 @@ export default function TableUsers() {
   return (
     <>
       <AccordionGroup>
-        <UserAccordion summary="Active" users={activeUsers} badges={badges} />
-        <UserAccordion
-          summary="Inactive"
-          users={inactiveUsers}
-          badges={badges}
-        />
+        <UserAccordion index={0} summary="Active" users={activeUsers} badges={badges} />
+        <UserAccordion index={1} summary="Inactive" users={inactiveUsers} badges={badges} />
       </AccordionGroup>
     </>
   )

@@ -32,7 +32,10 @@ const theme = extendTheme({
     body: inter.style.fontFamily,
     display: inter.style.fontFamily,
     code: sourceCodePro.style.fontFamily
-  }
+  },
+  palette: {
+    mode: 'dark',
+  },
 })
 
 export default theme

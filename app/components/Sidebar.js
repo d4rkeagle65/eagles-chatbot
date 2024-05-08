@@ -1,5 +1,6 @@
 'use client';
 import * as React from 'react';
+import { usePathname } from 'next/navigation';
 
 import { useRouter, useParams } from "next/navigation";
 import { useEffect } from "react";
@@ -33,14 +34,6 @@ const menuItems = [
 export default function Sidebar() {
     const router = useRouter();
     const params = useParams();
-    const [pageLoc, setLoc] = React.useState(true);
-
-    useEffect(() => {
-        async function setPageLoc() {
-            let path = window.location.pathname.slice(1);
-        }
-        setPageLoc();
-    }, [params]);
 
     return (
         <Sheet
@@ -121,7 +114,7 @@ export default function Sidebar() {
                         }}
                     >
                         {Object.values(menuItems).map((row, index) => (
-                            <MenuItem menuRow={row} rowIndex={index} />
+                            <MenuItem menuRow={row} key={index} />
                         ))}
                     </List>
                 </Box>
@@ -129,20 +122,16 @@ export default function Sidebar() {
     )
 }
 
-function MenuItem({ menuRow, rowIndex }) {
-    let selectBool;
-    if (menuRow.name === "Home") {
-        selectBool = null;
-    } else {
-        selectBool = menuRow.name;
-    }
+function MenuItem({ menuRow, key }) {
+    let selectBool = usePathname() === "/" ? "Home" : usePathname().slice(1);
 
     return (
-        <ListItem key={rowIndex}>
+        <ListItem key={key}>
             <ListItemButton
                 role="menuItem"
                 component="a"
                 href={menuRow.link}
+                selected={selectBool === menuRow.name}
             >
                 <ListItemContent>
                     <Typography level="title-sm">{menuRow.name}</Typography>

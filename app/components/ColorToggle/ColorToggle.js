@@ -1,43 +1,59 @@
 'use client';
 import * as React from 'react';
 import { useColorScheme } from '@mui/joy/styles';
-import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
-import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import IconButton from '@mui/joy/IconButton';
 
-export default function ColorSchemeToggle() {
-  const { mode, setMode } = useColorScheme('light');
+import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
+import LightModeIcon from '@mui/icons-material/LightMode';
+
+export default function ColorSchemeToggle(props) {
+  const { onClick, sx, ...other } = props;
+  const { mode, setMode } = useColorScheme();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => {
     setMounted(true);
   }, []);
   if (!mounted) {
-    return null;
+    return (
+      <IconButton
+        size="sm"
+        variant="outlined"
+        color="neutral"
+        {...other}
+        sx={sx}
+        disabled
+      />
+    );
   }
   return (
     <IconButton
       id="toggle-mode"
       size="sm"
-      variant="soft"
+      variant="outlined"
       color="neutral"
-      onClick={() => {
+      {...other}
+      onClick={(event) => {
         if (mode === 'light') {
           setMode('dark');
         } else {
           setMode('light');
         }
+        onClick?.(event);
       }}
-      sx={{
-	position: 'fixed',
-	zIndex: 999,
-	bottom: '1rem',
-	right: '1rem',
-        borderRadius: '50%',
-        boxShadow: 'sm',
-      }}
+      sx={[
+        {
+          '& > *:first-child': {
+            display: mode === 'dark' ? 'none' : 'initial',
+          },
+          '& > *:last-child': {
+            display: mode === 'light' ? 'none' : 'initial',
+          },
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
-      {mode === 'light' ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
+      <DarkModeRoundedIcon />
+      <LightModeIcon />
     </IconButton>
   );
 }
-

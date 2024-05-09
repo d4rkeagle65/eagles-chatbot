@@ -1,5 +1,5 @@
 "use client"
-import * as React from "react"
+import { useState, useEffect } from "react"
 
 import LinearProgress from "@mui/joy/LinearProgress"
 import Table from "@mui/joy/Table"
@@ -139,10 +139,10 @@ const QueueRow = ({ aQueueRow, index }) => {
 }
 
 export default function BsrQueueTable() {
-  const [qLoading, setQLoading] = React.useState(true)
-  const [activeQueue, setAQueue] = React.useState(true)
+  const [qLoading, setQLoading] = useState(true)
+  const [activeQueue, setAQueue] = useState(true)
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function getQueue() {
       const queueData = await fetch(
         process.env.NEXT_PUBLIC_BASE_URL + "/api/db/getqueue",

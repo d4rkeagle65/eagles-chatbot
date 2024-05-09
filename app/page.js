@@ -1,4 +1,3 @@
-import * as React from "react"
 import Sheet from "@mui/joy/Sheet"
 import Grid from "@mui/joy/Grid"
 import Box from "@mui/joy/Box"

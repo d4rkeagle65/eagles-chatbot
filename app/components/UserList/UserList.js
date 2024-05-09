@@ -1,5 +1,5 @@
 "use client"
-import * as React from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 
 import Accordion from "@mui/joy/Accordion"
@@ -140,7 +140,7 @@ const UserTable = props => {
 }
 
 const UserAccordion = props => {
-  const [index, setIndex] = React.useState(0);
+  const [index, setIndex] = useState(0);
   let userCount = Object.keys(props.users).length
   return (
     <Accordion 
@@ -162,14 +162,14 @@ const UserAccordion = props => {
 }
 
 export default function TableUsers() {
-  const [uAloading, setUALoading] = React.useState(true)
-  const [uIloading, setUILoading] = React.useState(true)
-  const [bloading, setBLoading] = React.useState(true)
-  const [activeUsers, setAUsers] = React.useState(null)
-  const [inactiveUsers, setIUsers] = React.useState(null)
-  const [badges, setBadges] = React.useState(null)
+  const [uAloading, setUALoading] = useState(true)
+  const [uIloading, setUILoading] = useState(true)
+  const [bloading, setBLoading] = useState(true)
+  const [activeUsers, setAUsers] = useState(null)
+  const [inactiveUsers, setIUsers] = useState(null)
+  const [badges, setBadges] = useState(null)
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function getAUsers() {
       const userList = await fetch(
         process.env.NEXT_PUBLIC_BASE_URL + "/api/db/getusers/active",

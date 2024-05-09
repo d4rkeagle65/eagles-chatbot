@@ -1,8 +1,5 @@
 'use client';
-import * as React from 'react';
-import { usePathname } from 'next/navigation';
-
-import { useRouter, useParams } from "next/navigation";
+import { usePathname, useRouter, useParams } from 'next/navigation';
 import { useEffect } from "react";
 
 import GlobalStyles from '@mui/joy/GlobalStyles';
@@ -13,7 +10,6 @@ import List from '@mui/joy/List';
 import ListItem from '@mui/joy/ListItem';
 import ListItemButton, { listItemButtonClasses } from '@mui/joy/ListItemButton';
 import ListItemContent from '@mui/joy/ListItemContent';
-import Icons from '@mui/icons-material';
 
 import { closeSidebar } from '@/lib/utils/sidebartoggle';
 import ColorToggle from "@/components/ColorToggle/ColorToggle"

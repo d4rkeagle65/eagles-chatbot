@@ -1,5 +1,5 @@
 "use client"
-import * as React from "react"
+import { useState, useEffect } from "react"
 
 import Chip from "@mui/joy/Chip"
 import Tooltip from "@mui/joy/Tooltip"
@@ -7,10 +7,10 @@ import Tooltip from "@mui/joy/Tooltip"
 export const dynamic = 'force-dynamic'
 
 export default function QueueStatus() {
-  const [sLoading, setStatusLoading] = React.useState(true)
-  const [queueStatus, setQueueStatus] = React.useState({ value: "" })
+  const [sLoading, setStatusLoading] = useState(true)
+  const [queueStatus, setQueueStatus] = useState({ value: "" })
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function getQueueStatus() {
       const statusData = await fetch(
         process.env.NEXT_PUBLIC_BASE_URL + "/api/db/getqueuestatus",

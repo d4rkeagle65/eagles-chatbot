@@ -1,5 +1,5 @@
 'use client';
-import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { useColorScheme } from '@mui/joy/styles';
 import IconButton from '@mui/joy/IconButton';
 
@@ -9,8 +9,8 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 export default function ColorSchemeToggle(props) {
   const { onClick, sx, ...other } = props;
   const { mode, setMode } = useColorScheme();
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
     setMounted(true);
   }, []);
   if (!mounted) {

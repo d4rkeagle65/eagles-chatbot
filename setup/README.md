@@ -2,7 +2,13 @@ As I am still learning the development process with NodeJS and NextJS I have not
 
 The things in this folder are purely for assisting in setting up the environment so that this can be deployed onto a server.
 
-I usually use Ubuntu Server LTS, which needs a repo add for newer versions of NodeJS:
+I usually use Ubuntu Server LTS, installing a few packages I like to use:
+```sh
+sudo apt install -y sudo git curl tmux vim
+sudo timedatectl set-timezone [timezone]
+```
+
+You will need to add a repo for the newer versions of NodeJS:
 ```sh
 sudo apt update
 sudo apt upgrade
@@ -43,18 +49,25 @@ Make sure to update the .env file in the chatbot data directory with the databas
 
 Here are the variables needed in the .env file:
 ```
+NEXT_PUBLIC_TWITCH_CHANNEL=
 USERNAME=
 TOKEN=
 CHANNEL=
+BSCHATUSER=
 DATABASE=ecb
 PGUSER=ecb_user
-PGPASS=
+PGPASS=[password]
 REDDISURL=reddis://127.0.0.1:6379
+PORT=80
+DATABASE_URL="postgresql://ecb_user:[password]@localhost:5432/ecb?schema=public"
+NODE_ENV=production
+NEXT_PUBLIC_BASE_URL=[external url]
 ```
 Before setting up the services, we need to compile the app:
 ```sh
 cd /data/eagles-chatbot
 npm install
+npx prisma generate --schema=/data/eagles-chatbot/app/lib/db/prisma/schema.prisma
 npm run build
 ```
 
@@ -90,9 +103,10 @@ sudo ln -s /etc/nginx/sites-available/eagles-chatbot-nginx /etc/nginx/sites-enab
 # Enable and start nginx
 sudo systemctl enable nginx
 sudo systemctl start nginx
+sudo systemctl restart nginx # Not sure why I have this issue, but I always have to restart nginx once for it to work.
 ```
 
-Additionally I use tmux, and make a window split for watching things while the frontend is not yet ready. Below are a few of the commands I use in each of the window panes:
+Additionally I use tmux, and make a window split for watching things if the frontend has an issue. Below are a few of the commands I use in each of the window panes:
 ```sh
 # To watch the log as things are happening in the chatbot
 sudo journalctl -fu eagles-chatbot-backend --no-hostname | egrep -i '\[BOT\]'

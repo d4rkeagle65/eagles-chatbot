@@ -1,6 +1,5 @@
 'use client';
 import { usePathname, useRouter, useParams } from 'next/navigation';
-import { useEffect } from "react";
 
 import GlobalStyles from '@mui/joy/GlobalStyles';
 import Box from '@mui/joy/Box';
@@ -23,7 +22,7 @@ const menuItems = [
     { 
         name: 'Queue', 
         icon: 'QueueMusic',
-        link: '/Queue', 
+        link: '/queue', 
     },
 ];
 
@@ -59,7 +58,7 @@ export default function Sidebar() {
                 ':root': {
                     '--Sidebar-width': '220px',
                     [theme.breakpoints.up('lg')]: {
-                    '--Sidebar-width': '240px',
+                        '--Sidebar-width': '240px',
                     },
                 },
                  })}
@@ -119,7 +118,7 @@ export default function Sidebar() {
 }
 
 function MenuItem({ menuRow, key }) {
-    let selectBool = usePathname() === "/" ? "Home" : usePathname().slice(1);
+    let selectBool = usePathname() === "/" ? "home" : usePathname().slice(1).toLowerCase();
 
     return (
         <ListItem key={key}>
@@ -127,7 +126,7 @@ function MenuItem({ menuRow, key }) {
                 role="menuItem"
                 component="a"
                 href={menuRow.link}
-                selected={selectBool === menuRow.name}
+                selected={selectBool === menuRow.name.toLowerCase()}
             >
                 <ListItemContent>
                     <Typography level="title-sm">{menuRow.name}</Typography>

@@ -82,60 +82,56 @@ const UserRow = props => {
   }
 
   return (
-    <React.Fragment>
-      <tr key={props.user.user_username}>
-        <td>
-          <UserType badge={nBadge} />
-        </td>
-        <td>{props.user.user_username}</td>
-        <td>
-          <UserLurk user_lurk={props.user.user_lurk} />
-        </td>
-        <td>
-          <UserLastActivity user_lastactivets={props.user.user_lastactivets} />
-        </td>
-      </tr>
-    </React.Fragment>
+    <tr key={props.user.user_username}>
+      <td>
+        <UserType badge={nBadge} />
+      </td>
+      <td>{props.user.user_username}</td>
+      <td>
+        <UserLurk user_lurk={props.user.user_lurk} />
+      </td>
+      <td>
+        <UserLastActivity user_lastactivets={props.user.user_lastactivets} />
+      </td>
+    </tr>
   )
 }
 
 const UserTable = props => {
   return (
-    <React.Fragment>
-      <Table
-        hoverRow
-        noWrap
-        size="sm"
-        borderAxis="xBetween"
-        variant="plain"
-        sx={{
-          m: 0,
-          p: 0,
-          "--TableCell-height": "23px",
-          "--TableCell-paddingX": "0px",
-          "--TableCell-paddingY": "0px",
-          "& tbody td:nth-child(1)": {
-            width: "10%",
-            pt: "3px"
-          },
-          "& tbody td:nth-child(2)": {
-            width: "55%"
-          },
-          "& tbody td:nth=child(3)": {
-            textAligh: "right"
-          },
-          "& tbody td:nth-child(4)": {
-            width: "25%"
-          }
-        }}
-      >
-        <tbody>
-          {props.users.map(user => (
-            <UserRow user={user} badges={props.badges} />
-          ))}
-        </tbody>
-      </Table>
-    </React.Fragment>
+    <Table
+      hoverRow
+      noWrap
+      size="sm"
+      borderAxis="xBetween"
+      variant="plain"
+      sx={{
+        m: 0,
+        p: 0,
+        "--TableCell-height": "23px",
+        "--TableCell-paddingX": "0px",
+        "--TableCell-paddingY": "0px",
+        "& tbody td:nth-child(1)": {
+          width: "10%",
+          pt: "3px"
+        },
+        "& tbody td:nth-child(2)": {
+          width: "55%"
+        },
+        "& tbody td:nth=child(3)": {
+          textAligh: "right"
+        },
+        "& tbody td:nth-child(4)": {
+          width: "25%"
+        }
+      }}
+    >
+      <tbody>
+        {props.users.map(user => (
+          <UserRow user={user} badges={props.badges} />
+        ))}
+      </tbody>
+    </Table>
   )
 }
 

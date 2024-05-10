@@ -33,9 +33,9 @@ export default function RootLayout(props) {
               sx={{
                 px: { xs: 2, md: 2 },
                 pt: {
-                  xs: 'calc(12px + var(--Header-height))',
-                  sm: 'calc(12px + var(--Header-height))',
-                  md: 1,
+                  xs: 'calc(16px + var(--Header-height))',
+                  sm: 'calc(16px + var(--Header-height))',
+                  md: 2,
                 },
                 pb: { xs: 2, sm: 2, md: 3 },
                 flex: 1,

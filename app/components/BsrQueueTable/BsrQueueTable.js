@@ -54,6 +54,25 @@ const LargeQueueTable = ({ queue }) => {
         '& tbody': { bgcolor: 'background.surface' },
       }}
     >
+      <caption>
+        <Box 
+          sx={{ 
+            display: 'flex',
+            justifyContent: 'space-between',
+            px: 2,
+          }}
+        >
+          <Box>
+            <Typography level="title-md">
+              {process.env.NEXT_PUBLIC_TWITCH_CHANNEL}'s BS+ Queue
+            </Typography>
+          </Box>
+          <Box>
+            <QueueStatus />
+            <QueueSyncState />
+          </Box>
+        </Box>
+      </caption>
       <thead>
         <tr>
           <th style={{ width: '2em' }}></th>
@@ -112,12 +131,12 @@ const SmallQueueRow = ({ aQueueRow, index }) => {
 
 const SmallQueueTable = ({ queue }) => {
   return (
-    <Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
       <Table
         size="sm"
         stripe="odd"
         noWrap
-        borderAxis="both"
+        borderAxis="none"
         sx={{
           captionSide: "top",
           '& tbody': { bgcolor: 'background.surface' },
@@ -137,7 +156,7 @@ const SmallQueueTable = ({ queue }) => {
           ))}
         </tbody>
       </Table>
-      <Box sx={{ display: 'flex', textAlign: 'right', p: 0.5 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'right', p: 0.5 }}>
         <QueueStatus />
         <QueueSyncState />
       </Box>

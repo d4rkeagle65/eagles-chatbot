@@ -61,7 +61,7 @@ export const MapCode = ({ bsr_code, sus_remap, mobile }) => {
     }
     return (
       <Typography level="body-xs" endDecorator={remapChip}>
-        <Link underline="always" variant="plain" href={qHref} target="_blank">
+        <Link underline="always" href={qHref} target="_blank">
           {bsr_code}
         </Link>
       </Typography>

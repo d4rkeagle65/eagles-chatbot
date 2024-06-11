@@ -27,6 +27,7 @@ const run = async () => {
 	chat.on('PRIVMSG', (msg) => { onMessage(msg) });
 	chat.on('JOIN', (msg) => { onUser_join(msg) });
 	chat.on('PART', (msg) => { onUser_part(msg) });
+	chat.on('ERROR', (msg) => { process.exit(1) });
 
 	dblclient.on('notification', (msg) => { onDB_newActive(msg) });
 }
